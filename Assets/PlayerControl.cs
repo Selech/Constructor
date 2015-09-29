@@ -9,6 +9,8 @@ public class PlayerControl: MonoBehaviour
 	public float speed;
 	public float vAngle;
 	public float jumpForce;
+
+	private int hitcount;
 	
 	// Use this for initialization
 	void Start ()
@@ -65,66 +67,68 @@ public class PlayerControl: MonoBehaviour
 		if (Input.GetKeyDown(KeyCode.Space)) {
 			v2 += jumpForce * Vector3.up;
 		}
-		this.GetComponent<Rigidbody>().velocity += v2;
+		this.GetComponent<Rigidbody>().AddForce(v2,ForceMode.VelocityChange);
 	}
 
 	void UpdateAction ()
 	{
-
 		// left click
 		if (Input.GetMouseButton (0)) {
-			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-			RaycastHit hit;
-				
-			if (Physics.Raycast (ray, out hit)) {
-				if (hit.collider.gameObject.tag == "Block") {
-					hit.collider.gameObject.GetComponent<BlockScript> ().Hit (this.gameObject, hit.point);
-				}
+			hitcount--;
+			if (hitcount < 0) {
+				Ray ray = new Ray (cam.transform.position, cam.transform.forward);
+				RaycastHit hit;
 					
-			}
+				if (Physics.Raycast (ray, out hit)) {
+					if (hit.collider.gameObject.tag == "Block") {
+						hit.collider.gameObject.GetComponent<BlockScript> ().Hit (this.gameObject, hit.point);
+					}
+					hitcount = 10;
+				}
 				
+			}
 		}
 		// right click
-		if (Input.GetMouseButton (1)) {
+		if (Input.GetMouseButtonDown (1)) {
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
 			RaycastHit hit;
-			
+		
 			if (Physics.Raycast (ray, out hit)) {
 				Vector3 result = new Vector3 (0, 0, 0);
-				
+			
 				Vector3 C = hit.collider.gameObject.transform.position;
 				Vector3 I = hit.point;
-				
+			
 				if (I.x == C.x + 0.5f) {
 					result = C + new Vector3 (1f, 0f, 0f);
-					
-				}
 				
+				}
+			
 				if (I.x == C.x - 0.5f) {
 					result = C + new Vector3 (-1f, 0f, 0f);
-					
-				}
 				
+				}
+			
 				if (I.y == C.y + 0.5f) {
 					result = C + new Vector3 (0f, 1f, 0f);
-					
-				}
 				
+				}
+			
 				if (I.y == C.y - 0.5f) {
 					result = C + new Vector3 (0f, -1f, 0f);
-					
-				}
 				
+				}
+			
 				if (I.z == C.z + 0.5f) {
 					result = C + new Vector3 (0f, 0f, 1f);
-					
-				}
 				
+				}
+			
 				if (I.z == C.z - 0.5f) {
 					result = C + new Vector3 (0f, 0f, -1f);
-					
-				}
 				
+				}
+			
 				this.gameObject.GetComponent<Inventory> ().PlaceBlock (result);
 			}
 		}
