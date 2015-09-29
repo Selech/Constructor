@@ -77,7 +77,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public Camera cam;
 		public Transform crosshair;
-		private int hitcount = 10;
 
         public MovementSettings movementSettings = new MovementSettings();
         public MouseLook mouseLook = new MouseLook();
@@ -140,64 +139,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void FixedUpdate()
         {
-			if (Input.GetKey (KeyCode.Mouse0)) {
-				hitcount--;
-				if(hitcount < 0){
-					print ("hit");
-					Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-					RaycastHit hit;
-					
-					if (Physics.Raycast (ray, out hit)) {
-						hit.collider.gameObject.GetComponent<BlockScript>().Hit(this.gameObject, hit.point);
-					}
 
-					hitcount = 10;
-				}
-			}
-
-			if (Input.GetKeyDown (KeyCode.Mouse1)) {
-				Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-				RaycastHit hit;
-				
-				if (Physics.Raycast (ray, out hit)) {
-					Vector3 result = new Vector3(0,0,0);
-
-					Vector3 C = hit.collider.gameObject.transform.position;
-					Vector3 I = hit.point;
-
-					if(I.x == C.x + 0.5f){
-						result = C + new Vector3(1f,0f,0f);
-
-					}
-
-					if(I.x == C.x - 0.5f){
-						result = C + new Vector3(-1f,0f,0f);
-						
-					}
-
-					if(I.y == C.y + 0.5f){
-						result = C + new Vector3(0f,1f,0f);
-						
-					}
-
-					if(I.y == C.y - 0.5f){
-						result = C + new Vector3(0f,-1f,0f);
-						
-					}
-
-					if(I.z == C.z + 0.5f){
-						result = C + new Vector3(0f,0f,1f);
-						
-					}
-
-					if(I.z == C.z - 0.5f){
-						result = C + new Vector3(0f,0f,-1f);
-						
-					}
-
-					this.gameObject.GetComponent<Inventory>().PlaceBlock(result);
-				}
-			}
 
             GroundCheck();
             Vector2 input = GetInput();
