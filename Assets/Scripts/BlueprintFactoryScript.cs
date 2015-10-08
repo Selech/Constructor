@@ -1,15 +1,13 @@
 ﻿using UnityEngine;
 using System.IO;
+using System.Collections.Generic;
 using System.Globalization;
 
 public class BlueprintFactoryScript : MonoBehaviour {
 
+	public GameObject blueprint;
     public Vector3 dimensions;
-    public GameObject dirtBlocks;
-    public GameObject stoneBlocks;
-    public GameObject woodBlocks;
     public string fileName;
-    private GameObject dirtPrefab, stonePrefab, woodPrefab;
 
 	// Use this for initialization
 	void Start () {
@@ -18,36 +16,34 @@ public class BlueprintFactoryScript : MonoBehaviour {
         Load();
     }
 
-    private void LoadPrefabs()
-    {
-        dirtPrefab = (GameObject)Resources.Load("Blocks/dirt", typeof(GameObject));
-        stonePrefab = (GameObject)Resources.Load("Blocks/stone", typeof(GameObject));
-        woodPrefab = (GameObject)Resources.Load("Blocks/wood", typeof(GameObject));
-    }
+	private void NewTemplate() {
 
-    private void Save()
+	}
+
+    private void SaveBlueprint()
     {
         var sr = File.CreateText(fileName + ".txt");
         sr.WriteLine("dim:" + dimensions);
-        sr.WriteLine(GetBlockPositions("dirt:", dirtBlocks));
-        sr.WriteLine(GetBlockPositions("stone:", stoneBlocks));
+        sr.WriteLine(GetBlockPositions("dirt:", GameObject.Find ("Dirt blocks")));
+		sr.WriteLine(GetBlockPositions("stone:", GameObject.Find ("Stone blocks"));
+		sr.WriteLine(GetBlockPositions("stone:", GameObject.Find ("Wood blocks"));
         sr.Close();
         print("Saved blueprint succesfully!");
     }
 
-    public void Load()
+    private void LoadBlueprint()
     {
-        Reset();
-        GameObject block;
+		DestroyChildren (blueprint);
+		var prefabs = LoadPrefabs ();
         var sr = File.OpenText(fileName + ".txt");
-        var line = sr.ReadLine();
+        // read lines
+		string line = sr.ReadLine();
         while (line != null)
         {
             string[] data = line.Split(':');
             if (data[0] == "dim")
             {
-                Vector3 dim = ToVector(line.Split(':')[1]);
-                print(dim);
+                Vector3 dim = ToVector(data[1]);
             }
             else
             {
@@ -85,21 +81,26 @@ public class BlueprintFactoryScript : MonoBehaviour {
         return new Vector3(x, y, z);
     }
 
-    private void Reset()
+    private void DestroyChildren(GameObject obj)
     {
-        DestroyAll(dirtBlocks);
-        DestroyAll(stoneBlocks);
-        DestroyAll(woodBlocks);
+		foreach (Transform child in obj.transform) {
+			GameObject.Destroy(child);
+		}
+//        foreach (ParticleSystem child in obj.GetComponentsInChildren<ParticleSystem>())
+//        {
+//            print(child.name);
+//            Destroy(child.transform.parent.gameObject);
+//        }
     }
 
-    private void DestroyAll(GameObject obj)
-    {
-        foreach (ParticleSystem child in obj.GetComponentsInChildren<ParticleSystem>())
-        {
-            print(child.name);
-            Destroy(child.transform.parent.gameObject);
-        }
-    }
+	private Dictionary<string, GameObject> LoadPrefabs()
+	{
+		Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
+		prefabs["dirt"] = (GameObject)Resources.Load("Blocks/dirt", typeof(GameObject));
+		prefabs["stone"] = (GameObject)Resources.Load("Blocks/stone", typeof(GameObject));
+		prefabs["wood"] = (GameObject)Resources.Load("Blocks/wood", typeof(GameObject));
+		return prefabs;
+	}
 
     private string GetBlockPositions(string type, GameObject parent)
     {
