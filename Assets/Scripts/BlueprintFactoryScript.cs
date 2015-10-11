@@ -6,27 +6,31 @@ using System.Globalization;
 public class BlueprintFactoryScript : MonoBehaviour {
 
 	public GameObject blueprint;
-    public Vector3 dimensions;
     public string fileName;
+	private string[] blockTypes = new string[] {"Dirt", "Stone", "Wood"};
 
 	// Use this for initialization
 	void Start () {
-        LoadPrefabs();
-        //Save();
-        Load();
+		//NewTemplate();
+		//SaveBlueprint();
+		LoadBlueprint();
     }
 
 	private void NewTemplate() {
-
+		foreach(string bt in blockTypes) {
+			GameObject container = new GameObject(bt + " Blocks");
+			container.transform.parent = blueprint.transform;
+		}
 	}
 
     private void SaveBlueprint()
     {
         var sr = File.CreateText(fileName + ".txt");
-        sr.WriteLine("dim:" + dimensions);
-        sr.WriteLine(GetBlockPositions("dirt:", GameObject.Find ("Dirt blocks")));
-		sr.WriteLine(GetBlockPositions("stone:", GameObject.Find ("Stone blocks"));
-		sr.WriteLine(GetBlockPositions("stone:", GameObject.Find ("Wood blocks"));
+		sr.WriteLine("Position:" + blueprint.transform.position);
+		// saves all positions of the blocks
+		foreach(string bp in blockTypes) {
+			sr.WriteLine(GetBlockPositions(bp, GameObject.Find(bp + " Blocks")));
+		}
         sr.Close();
         print("Saved blueprint succesfully!");
     }
@@ -34,35 +38,31 @@ public class BlueprintFactoryScript : MonoBehaviour {
     private void LoadBlueprint()
     {
 		DestroyChildren (blueprint);
+		NewTemplate();
 		var prefabs = LoadPrefabs ();
         var sr = File.OpenText(fileName + ".txt");
-        // read lines
+
+        // read data file
 		string line = sr.ReadLine();
         while (line != null)
         {
             string[] data = line.Split(':');
-            if (data[0] == "dim")
+            if (data[0] == "Position")
             {
-                Vector3 dim = ToVector(data[1]);
+                blueprint.transform.position = ToVector(data[1]);
             }
             else
             {
-                // find prefab and parent
-                GameObject prefab;
-                GameObject parent;
-                switch(data[0])
-                {
-                    case "dirt": prefab = dirtPrefab; parent = dirtBlocks; break;
-                    case "stone": prefab = stonePrefab; parent = stoneBlocks; break;
-                    case "wood": prefab = woodPrefab; parent = woodBlocks; break;
-                    default: prefab = dirtPrefab; parent = dirtBlocks; break;
-                }
+				string blockType = data[0];
+				GameObject container = GameObject.Find((blockType + " Blocks"));
+				GameObject prefab = prefabs[blockType];
+
                 // creates the blocks
                 foreach(string v in data[1].Split(';'))
                 {
-                    block = Instantiate(prefab);
+                    GameObject block = Instantiate(prefab);
                     block.transform.position = ToVector(v);
-                    block.transform.SetParent(parent.transform);
+                    block.transform.SetParent(container.transform);
                 }
             }
             line = sr.ReadLine();
@@ -73,7 +73,6 @@ public class BlueprintFactoryScript : MonoBehaviour {
 
     private Vector3 ToVector(string v)
     {
-		print ("<" + v + ">");
         string[] v2 = v.Split(',');
         float x = float.Parse(v2[0].TrimStart('('));
         float y = float.Parse(v2[1].TrimStart(' '));
@@ -96,16 +95,16 @@ public class BlueprintFactoryScript : MonoBehaviour {
 	private Dictionary<string, GameObject> LoadPrefabs()
 	{
 		Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
-		prefabs["dirt"] = (GameObject)Resources.Load("Blocks/dirt", typeof(GameObject));
-		prefabs["stone"] = (GameObject)Resources.Load("Blocks/stone", typeof(GameObject));
-		prefabs["wood"] = (GameObject)Resources.Load("Blocks/wood", typeof(GameObject));
+		foreach(string bt in blockTypes) {
+			prefabs[bt] = (GameObject)Resources.Load("Blocks/" + bt, typeof(GameObject));
+		}
 		return prefabs;
 	}
 
-    private string GetBlockPositions(string type, GameObject parent)
+    private string GetBlockPositions(string blockType, GameObject container)
     {
-        Transform[] arr = parent.GetComponentsInChildren<Transform>();
-        string result = type;
+		Transform[] arr = container.GetComponentsInChildren<Transform>();
+		string result = blockType + ":";
 
         foreach (Transform t in arr)
         {

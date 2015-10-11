@@ -2,22 +2,27 @@
 using System.Collections;
 
 [RequireComponent (typeof (Rigidbody))]
+[RequireComponent (typeof (CapsuleCollider))]
 public class PlayerControl: MonoBehaviour
 {
 	public Camera cam;
 	public float lookSpeed;
-	public float speed;
 	public float vAngle;
+	public float walkSpeed;
+	public float maxSpeed;
+	public float breakingSpeed;
+	public float airSpeedAmp;
 	public float jumpForce;
-
 	private int hitcount;
+	private float distToGround;
 	
 	// Use this for initialization
 	void Start ()
 	{
-
+		CapsuleCollider collider = GetComponent<CapsuleCollider>();
+		distToGround = collider.bounds.extents.y;
 	}
-	
+
 	void FixedUpdate ()
 	{
 		UpdateLook();
@@ -31,7 +36,6 @@ public class PlayerControl: MonoBehaviour
 		if (mx != 0) {
 			float yRotation = mx * lookSpeed;
 			yRotation += transform.rotation.eulerAngles.y;
-			//Quaternion.Lerp(this.transform.rotation, Quaternion.Euler(0, yRotation, 0), Time.deltaTime);
 			transform.rotation = Quaternion.Euler(0, yRotation, 0);
 		}
 		
@@ -46,28 +50,50 @@ public class PlayerControl: MonoBehaviour
 	}
 
 	void UpdateMovement() {
-		Vector3 v2 = new Vector3();
+		bool moving = false;
+		Rigidbody rb = GetComponent<Rigidbody>();
+		// if in air the movement speed is reduced
+		float amp = IsGrounded() ? 1f : airSpeedAmp;
 		// forward
 		if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) {
-			v2 += speed * this.transform.forward;
+			moving = true;
+			rb.AddForce(this.transform.forward * walkSpeed * amp);
 		}
 		// backwards
 		if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) {
-			v2 -= speed * this.transform.forward;
+			moving = true;
+			rb.AddForce(-this.transform.forward * walkSpeed * amp);
 		}
 		// left
 		if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) {
-			v2 -= speed * this.transform.right;
+			moving = true;
+			rb.AddForce(-this.transform.right * walkSpeed * amp);
 		}
 		// right
 		if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) {
-			v2 += speed * this.transform.right;
+			moving = true;
+			rb.AddForce(this.transform.right * walkSpeed * amp);
 		}
 		// jump
-		if (Input.GetKeyDown(KeyCode.Space)) {
-			v2 += jumpForce * Vector3.up;
+		if (Input.GetKey(KeyCode.Space) && IsGrounded()) {
+			rb.AddForce(this.transform.up * jumpForce);
 		}
-		this.GetComponent<Rigidbody>().AddForce(v2,ForceMode.VelocityChange);
+
+		// control horizontal max speed
+		Vector2 horizontalVelocity = new Vector2(rb.velocity.x, rb.velocity.z);
+		if (horizontalVelocity.magnitude > maxSpeed) {
+			horizontalVelocity = horizontalVelocity.normalized * maxSpeed;
+			rb.velocity = new Vector3(horizontalVelocity.x, rb.velocity.y, horizontalVelocity.y);
+		}
+		// deaccelerates player when not moving and standing on the ground
+		if (!moving && IsGrounded()) {
+			horizontalVelocity *= 1 - breakingSpeed;
+			rb.velocity = new Vector3(horizontalVelocity.x, rb.velocity.y, horizontalVelocity.y);
+		}
+	}
+
+	bool IsGrounded() {
+		return Physics.Raycast(this.transform.position, -Vector3.up, distToGround + 0.05f);
 	}
 
 	void UpdateAction ()
@@ -85,7 +111,6 @@ public class PlayerControl: MonoBehaviour
 					}
 					hitcount = 10;
 				}
-				
 			}
 		}
 		// right click

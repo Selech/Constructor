@@ -3,6 +3,7 @@ using System.Collections;
 
 public class MapGenerator : MonoBehaviour {
 
+	public GameObject buildZone;
 	public GameObject stone;
 	public GameObject dirt;
 	public GameObject wood;
@@ -13,9 +14,13 @@ public class MapGenerator : MonoBehaviour {
 	}
 
 	void GenerateMap(int height, int depth, int width){
+		BuildZoneScript bs = buildZone.GetComponent<BuildZoneScript>();
 		for(int i = 0; i < height; i++){
 			for(int j = 0; j < depth; j++){
 				for(int k = 0; k < width; k++){
+					if (bs.Contains(new Vector3(k,i,j) + transform.position)) {
+						continue;
+					}
 					GameObject g = PickBlock(i);
 					g.transform.parent = this.transform;
 					g.transform.localPosition = new Vector3(k,i,j);
