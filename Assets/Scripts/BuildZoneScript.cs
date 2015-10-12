@@ -4,16 +4,11 @@ using System.Collections;
 [RequireComponent (typeof (BoxCollider))]
 public class BuildZoneScript : MonoBehaviour {
 
-	public BoxCollider box;
+	private BoxCollider box;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 		box = GetComponent<BoxCollider>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
 	}
 
 	public bool Contains(Vector3 position) {

@@ -2,12 +2,12 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
+using System;
 
 public class BlueprintFactoryScript : MonoBehaviour {
 
 	public GameObject blueprint;
     public string fileName;
-	private string[] blockTypes = new string[] {"Dirt", "Stone", "Wood"};
 
 	// Use this for initialization
 	void Start () {
@@ -17,7 +17,7 @@ public class BlueprintFactoryScript : MonoBehaviour {
     }
 
 	private void NewTemplate() {
-		foreach(string bt in blockTypes) {
+		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
 			GameObject container = new GameObject(bt + " Blocks");
 			container.transform.parent = blueprint.transform;
 		}
@@ -28,8 +28,8 @@ public class BlueprintFactoryScript : MonoBehaviour {
         var sr = File.CreateText(fileName + ".txt");
 		sr.WriteLine("Position:" + blueprint.transform.position);
 		// saves all positions of the blocks
-		foreach(string bp in blockTypes) {
-			sr.WriteLine(GetBlockPositions(bp, GameObject.Find(bp + " Blocks")));
+		foreach(BlockType bp in Enum.GetValues(typeof(BlockType))) {
+			sr.WriteLine(GetBlockPositions(bp.ToString(), GameObject.Find(bp + " Blocks")));
 		}
         sr.Close();
         print("Saved blueprint succesfully!");
@@ -39,7 +39,6 @@ public class BlueprintFactoryScript : MonoBehaviour {
     {
 		DestroyChildren (blueprint);
 		NewTemplate();
-		var prefabs = LoadPrefabs ();
         var sr = File.OpenText(fileName + ".txt");
 
         // read data file
@@ -53,16 +52,13 @@ public class BlueprintFactoryScript : MonoBehaviour {
             }
             else
             {
-				string blockType = data[0];
+				BlockType blockType = (BlockType)Enum.Parse(typeof(BlockType), data[0]);
 				GameObject container = GameObject.Find((blockType + " Blocks"));
-				GameObject prefab = prefabs[blockType];
 
                 // creates the blocks
                 foreach(string v in data[1].Split(';'))
                 {
-                    GameObject block = Instantiate(prefab);
-                    block.transform.position = ToVector(v);
-                    block.transform.SetParent(container.transform);
+					BlockScript.Create(blockType, ToVector(v), container);
                 }
             }
             line = sr.ReadLine();
@@ -85,22 +81,8 @@ public class BlueprintFactoryScript : MonoBehaviour {
 		foreach (Transform child in obj.transform) {
 			GameObject.Destroy(child);
 		}
-//        foreach (ParticleSystem child in obj.GetComponentsInChildren<ParticleSystem>())
-//        {
-//            print(child.name);
-//            Destroy(child.transform.parent.gameObject);
-//        }
     }
-
-	private Dictionary<string, GameObject> LoadPrefabs()
-	{
-		Dictionary<string, GameObject> prefabs = new Dictionary<string, GameObject>();
-		foreach(string bt in blockTypes) {
-			prefabs[bt] = (GameObject)Resources.Load("Blocks/" + bt, typeof(GameObject));
-		}
-		return prefabs;
-	}
-
+	
     private string GetBlockPositions(string blockType, GameObject container)
     {
 		Transform[] arr = container.GetComponentsInChildren<Transform>();

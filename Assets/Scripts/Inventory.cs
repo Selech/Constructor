@@ -1,84 +1,73 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System;
 
 public class Inventory : MonoBehaviour {
 	
-	public Dictionary<string,int> collected;
-	
+	public Dictionary<BlockType, int> collected;
 	public Text AmountOfDirt;
 	public Text AmountOfStone;
 	public Text AmountOfWood;
 	public Image UIMarker;
 	
-	public GameObject stone;
-	public GameObject dirt;
-	public GameObject wood;
+	private GameObject stone;
+	private GameObject dirt;
+	private GameObject wood;
 	
-	public string chosen;
+	private BlockType chosen;
 	
 	// Use this for initialization
 	void Start () {
-		collected = new Dictionary<string, int> ();
-		collected.Add ("dirt",0);
-		collected.Add ("wood",0);
-		collected.Add ("stone",0);
+		chosen = BlockType.Dirt;
+		collected = new Dictionary<BlockType, int> ();
+		foreach (BlockType bt in Enum.GetValues(typeof(BlockType))) {
+			collected[bt] = 0;
+		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Alpha1)) {
-			chosen = "dirt";
+			chosen = BlockType.Dirt;
 			UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
 		}
 		
 		if (Input.GetKeyDown (KeyCode.Alpha2)) {
-			chosen = "stone";
+			chosen = BlockType.Stone;
 			UIMarker.rectTransform.localPosition = new Vector3(-95,50,0);
 		}
 		
 		if (Input.GetKeyDown (KeyCode.Alpha3)) {
-			chosen = "wood";
+			chosen = BlockType.Wood;
 			UIMarker.rectTransform.localPosition = new Vector3(0,50,0);
 		}
 	}
 	
-	public void AddBlock(string block){
-		collected[block] += 1;
+	public void AddBlock(BlockType type){
+		collected[type]++;
 		UpdateText ();
 	}
-	
-	private void UpdateText(){
-		AmountOfDirt.text = collected["dirt"]+"";
-		AmountOfStone.text = collected["stone"]+"";
-		AmountOfWood.text = collected["wood"]+"";
-	}
-	
-	public void PlaceBlock(Vector3 position){
-		if (collected [chosen] > 0) {
-			GameObject g = GetBlock (chosen);
-			g.transform.position = position;
-			g.transform.parent = GameObject.Find ("Map").transform;
-			
-			collected [chosen] -= 1;
+
+	// returns false if inventory have no selected blocks left
+	public bool RemoveBlock() {
+		if (collected[chosen] <= 0) {
+			return false;
+		}
+		else {
+			collected[chosen]--;
 			UpdateText ();
+			return true;
 		}
 	}
-	
-	private GameObject GetBlock(string s){
-		if(s == "stone"){
-			return Instantiate(stone);
-		}
-		
-		if(s == "wood"){
-			return Instantiate(wood);
-		}
-		
-		if(s == "dirt"){
-			return Instantiate(dirt);
-		}
-		
-		return Instantiate(dirt);
+
+	public BlockType GetChosen() {
+		return chosen;
 	}
-	
+
+	private void UpdateText(){
+		AmountOfDirt.text = collected[BlockType.Dirt] + "";
+		AmountOfStone.text = collected[BlockType.Stone] + "";
+		AmountOfWood.text = collected[BlockType.Wood] + "";
+	}
 }

@@ -8,43 +8,40 @@ public class MapGenerator : MonoBehaviour {
 	public GameObject stone;
 	public GameObject dirt;
 	public GameObject wood;
+	private GameObject container;
 
 	// Use this for initialization
 	void Start () {
+		container = GameObject.Find ("Blocks");
 		GenerateMap (layers,50,50);
 	}
 
 	void GenerateMap(int height, int depth, int width){
 		BuildZoneScript bs = buildZone.GetComponent<BuildZoneScript>();
-		GameObject container = GameObject.Find("Blocks");
-		for(int i = 0; i < height; i++){
-			for(int j = 0; j < depth; j++){
-				for(int k = 0; k < width; k++){
-					if (bs.Contains(new Vector3(k,i,j) + transform.position)) {
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				for(int z = 0; z < depth; z++){
+					Vector3 blockPos = new Vector3(x, y, z);
+					// Ignore positions colliding with the build zone
+					if (bs.Contains(blockPos)) {
 						continue;
 					}
-					GameObject g = PickBlock(i);
-					g.transform.parent = container.transform;
-					g.transform.localPosition = new Vector3(k,i,j);
+					// Generates blocks
+					PickBlock(blockPos);
 				}
 			}
 		}
 	}
 
-	GameObject PickBlock(int height){
-		if(height < 2){
-			return Instantiate(stone);
+	GameObject PickBlock(Vector3 position){
+
+		if(position.y < 2){
+			return BlockScript.Create(BlockType.Stone, position, container);
+		}
+		if(position.y < 4 && Random.Range (0,2) == 0){
+			return BlockScript.Create(BlockType.Stone, position, container);
 		}
 
-		if(height < 4){
-			if(Random.Range (0,2) == 0){
-				return Instantiate(stone);
-			}
-			else{
-				return Instantiate(dirt);
-			}
-		}
-
-		return Instantiate(dirt);
+		return BlockScript.Create(BlockType.Dirt, position, container);
 	}
 }

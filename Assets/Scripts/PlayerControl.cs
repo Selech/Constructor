@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 [RequireComponent (typeof (Rigidbody))]
 [RequireComponent (typeof (CapsuleCollider))]
+[RequireComponent (typeof (Inventory))]
 public class PlayerControl: MonoBehaviour
 {
 	public Camera cam;
@@ -13,13 +15,20 @@ public class PlayerControl: MonoBehaviour
 	public float breakingSpeed;
 	public float airSpeedAmp;
 	public float jumpForce;
+	public float miningSpeed;
+	public float miningPower;
 	private int hitcount;
 	private float distToGround;
+	private Inventory inventory;
+	private GameObject container;
+	private DateTime lastAction;
 	
 	// Use this for initialization
 	void Start ()
 	{
 		CapsuleCollider collider = GetComponent<CapsuleCollider>();
+		inventory = GetComponent<Inventory>();
+		container = GameObject.Find ("Blocks");
 		distToGround = collider.bounds.extents.y;
 	}
 
@@ -96,20 +105,27 @@ public class PlayerControl: MonoBehaviour
 		return Physics.Raycast(this.transform.position, -Vector3.up, distToGround + 0.05f);
 	}
 
+	private bool canPerformAction() {
+		// Time difference in milli seconds
+		long deltaTime = (DateTime.Now.Ticks - lastAction.Ticks) / TimeSpan.TicksPerMillisecond;
+		return deltaTime > (1000 / miningSpeed);
+	}
+
 	void UpdateAction ()
 	{
 		// left click
-		if (Input.GetMouseButton (0)) {
-			hitcount--;
-			if (hitcount < 0) {
-				Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-				RaycastHit hit;
-					
-				if (Physics.Raycast (ray, out hit)) {
-					if (hit.collider.gameObject.tag == "Block") {
-						hit.collider.gameObject.GetComponent<BlockScript> ().Hit (this.gameObject, hit.point);
+		if (Input.GetMouseButton (0) && canPerformAction()) {
+			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit)) {
+				string tag = hit.collider.gameObject.tag;
+				if (tag == "Collectable") {
+					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
+					// Check if block breaks
+					if (bs.Hit (hit.point, miningPower)) {
+						inventory.AddBlock(bs.type);
 					}
-					hitcount = 10;
+					lastAction = DateTime.Now;
 				}
 			}
 		}
@@ -119,42 +135,14 @@ public class PlayerControl: MonoBehaviour
 			RaycastHit hit;
 		
 			if (Physics.Raycast (ray, out hit)) {
-				Vector3 result = new Vector3 (0, 0, 0);
-			
-				Vector3 C = hit.collider.gameObject.transform.position;
-				Vector3 I = hit.point;
-			
-				if (I.x == C.x + 0.5f) {
-					result = C + new Vector3 (1f, 0f, 0f);
-				
+				// Checks if the clicked object can be build upon
+				if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
+					// Checks if inventory have any of the chosen blocks left
+					if (inventory.RemoveBlock()) {
+						Vector3 blockCoord = hit.collider.gameObject.GetComponent<Buildable>().GetBlockPosition(hit);
+						BlockScript.Create(inventory.GetChosen(), blockCoord, container);
+					}
 				}
-			
-				if (I.x == C.x - 0.5f) {
-					result = C + new Vector3 (-1f, 0f, 0f);
-				
-				}
-			
-				if (I.y == C.y + 0.5f) {
-					result = C + new Vector3 (0f, 1f, 0f);
-				
-				}
-			
-				if (I.y == C.y - 0.5f) {
-					result = C + new Vector3 (0f, -1f, 0f);
-				
-				}
-			
-				if (I.z == C.z + 0.5f) {
-					result = C + new Vector3 (0f, 0f, 1f);
-				
-				}
-			
-				if (I.z == C.z - 0.5f) {
-					result = C + new Vector3 (0f, 0f, -1f);
-				
-				}
-			
-				this.gameObject.GetComponent<Inventory> ().PlaceBlock (result);
 			}
 		}
 	}
