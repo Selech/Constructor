@@ -4,17 +4,19 @@ using System.Collections;
 public class MapGenerator : MonoBehaviour {
 
 	public GameObject buildZone;
+	public int layers;
 	public GameObject stone;
 	public GameObject dirt;
 	public GameObject wood;
 
 	// Use this for initialization
 	void Start () {
-		GenerateMap (6,50,50);
+		GenerateMap (layers,50,50);
 	}
 
 	void GenerateMap(int height, int depth, int width){
 		BuildZoneScript bs = buildZone.GetComponent<BuildZoneScript>();
+		GameObject container = GameObject.Find("Blocks");
 		for(int i = 0; i < height; i++){
 			for(int j = 0; j < depth; j++){
 				for(int k = 0; k < width; k++){
@@ -22,7 +24,7 @@ public class MapGenerator : MonoBehaviour {
 						continue;
 					}
 					GameObject g = PickBlock(i);
-					g.transform.parent = this.transform;
+					g.transform.parent = container.transform;
 					g.transform.localPosition = new Vector3(k,i,j);
 				}
 			}
