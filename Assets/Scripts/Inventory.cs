@@ -22,7 +22,7 @@ public class Inventory : MonoBehaviour {
 		chosen = BlockType.Dirt;
 		collected = new Dictionary<BlockType, int> ();
 		foreach (BlockType bt in Enum.GetValues(typeof(BlockType))) {
-			collected[bt] = 0;
+			collected[bt] = 100;
 		}
 	}
 	

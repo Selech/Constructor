@@ -32,11 +32,14 @@ public class PlayerControl: MonoBehaviour
 		distToGround = collider.bounds.extents.y;
 	}
 
+	void Update(){
+		UpdateLook();
+		UpdateAction();
+	}
+
 	void FixedUpdate ()
 	{
-		UpdateLook();
 		UpdateMovement();
-		UpdateAction();
 	}
 
 	void UpdateLook() {
@@ -124,7 +127,15 @@ public class PlayerControl: MonoBehaviour
 					// Check if block breaks
 					if (bs.Hit (hit.point, miningPower)) {
 						inventory.AddBlock(bs.type);
+
+						BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
+						if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
+							bz.BlockRemoved(bs.gameObject);
+						}
+
+						Destroy(bs.gameObject);
 					}
+					// CoOlDoWn
 					lastAction = DateTime.Now;
 				}
 			}
@@ -140,7 +151,13 @@ public class PlayerControl: MonoBehaviour
 					// Checks if inventory have any of the chosen blocks left
 					if (inventory.RemoveBlock()) {
 						Vector3 blockCoord = hit.collider.gameObject.GetComponent<Buildable>().GetBlockPosition(hit);
-						BlockScript.Create(inventory.GetChosen(), blockCoord, container);
+						GameObject block = BlockScript.Create(inventory.GetChosen(), blockCoord, container);
+
+						BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
+						if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(block.transform.position)){
+							bz.BlockAdded(block);
+						}
+
 					}
 				}
 			}

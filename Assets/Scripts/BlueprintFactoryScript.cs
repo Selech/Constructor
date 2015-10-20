@@ -7,6 +7,8 @@ using System;
 public class BlueprintFactoryScript : MonoBehaviour {
 
 	public GameObject blueprint;
+	private BlueprintScript bpScript;
+	private GameObject instansBlueprint;
     public string fileName;
 
 	// Use this for initialization
@@ -17,10 +19,13 @@ public class BlueprintFactoryScript : MonoBehaviour {
     }
 
 	private void NewTemplate() {
-		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
-			GameObject container = new GameObject(bt + " Blocks");
-			container.transform.parent = blueprint.transform;
-		}
+		instansBlueprint = Instantiate (blueprint);
+		instansBlueprint.transform.parent = this.transform;
+		instansBlueprint.transform.localPosition = new Vector3 ();
+
+		bpScript = instansBlueprint.GetComponent<BlueprintScript> ();
+
+		this.GetComponent<BuildZoneScript> ().blueprint = bpScript;
 	}
 
     private void SaveBlueprint()
@@ -35,11 +40,10 @@ public class BlueprintFactoryScript : MonoBehaviour {
         print("Saved blueprint succesfully!");
     }
 
-    private void LoadBlueprint()
+    public void LoadBlueprint()
     {
-		DestroyChildren (blueprint);
 		NewTemplate();
-        var sr = File.OpenText(fileName + ".txt");
+        var sr = File.OpenText("Assets/Resources/Blueprints/" + fileName + ".txt");
 
         // read data file
 		string line = sr.ReadLine();
@@ -48,17 +52,30 @@ public class BlueprintFactoryScript : MonoBehaviour {
             string[] data = line.Split(':');
             if (data[0] == "Position")
             {
-                blueprint.transform.position = ToVector(data[1]);
+                blueprint.transform.localPosition = ToVector(data[1]);
             }
             else
             {
+				if(data[1] == ""){
+					line = sr.ReadLine();
+					continue;	
+				}
+
 				BlockType blockType = (BlockType)Enum.Parse(typeof(BlockType), data[0]);
-				GameObject container = GameObject.Find((blockType + " Blocks"));
+
+				GameObject container = null;
+				ContainerScript[] css = instansBlueprint.GetComponentsInChildren<ContainerScript>();
+				foreach(ContainerScript cs in css){
+					if(cs.gameObject.name == blockType + " Blocks"){
+						container = cs.gameObject;
+					}
+				}
 
                 // creates the blocks
                 foreach(string v in data[1].Split(';'))
                 {
-					BlockScript.Create(blockType, ToVector(v), container);
+					GameObject block = BlockScript.CreateFaded(blockType, ToVector(v), container);
+					bpScript.AddPosition(blockType, block.transform.position);
                 }
             }
             line = sr.ReadLine();
@@ -90,7 +107,7 @@ public class BlueprintFactoryScript : MonoBehaviour {
 
         foreach (Transform t in arr)
         {
-			if (t.gameObject.tag == "Block")
+			if (t.gameObject.tag == "Collectable")
             	result += t.position + ";";
         }
 		return result.TrimEnd(';');
