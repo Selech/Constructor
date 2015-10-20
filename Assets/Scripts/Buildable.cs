@@ -3,16 +3,6 @@ using System.Collections;
 
 public class Buildable : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-
 	public Vector3 GetBlockPosition(RaycastHit hit) {
 		// Finds closest block coordinate
 		float x = Mathf.Round(hit.point.x);
