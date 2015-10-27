@@ -32,10 +32,6 @@ public class BlueprintScript : MonoBehaviour {
 		return blockLists [type].Count;
 	}
 
-	public ArrayList GetBlockPositions(BlockType type) {
-		return blockLists[type];
-	}
-
 	public void Clear(){
 		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
 			blockLists[bt] = new ArrayList();

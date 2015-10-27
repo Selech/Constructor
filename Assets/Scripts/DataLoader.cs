@@ -27,7 +27,8 @@ public class DataLoader : MonoBehaviour {
 				// creates the blocks
 				foreach(string v in data[1].Split(';'))
 				{
-					blueprint.AddBlock(blockType, ToVector(v));
+					if (v != "")
+						blueprint.AddBlock(blockType, ToVector(v));
 				}
 			}
 			line = sr.ReadLine();
@@ -41,9 +42,10 @@ public class DataLoader : MonoBehaviour {
 		// Write local position of blueprint
 		sr.WriteLine("Position:" + blueprint.gameObject.transform.localPosition);
 		// saves all positions of the blocks
-		foreach(BlockType bp in Enum.GetValues(typeof(BlockType))) {
-			string line = bp + ":";
-			foreach (Vector3 v in blueprint.GetBlockPositions(bp))
+		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
+			string line = bt + ":";
+			GameObject container = blueprint.transform.Find(bt + " Blocks").gameObject;
+			foreach (Vector3 v in GetBlockPositions(container))
 			{
 				line += v + ";";
 			}
@@ -52,6 +54,14 @@ public class DataLoader : MonoBehaviour {
 		}
 		sr.Close();
 		print("Saved blueprint succesfully!");
+	}
+
+	private static ArrayList GetBlockPositions(GameObject container) {
+		ArrayList positions = new ArrayList();
+		foreach (Transform child in container.transform) {
+			positions.Add(child.transform.localPosition);
+		}
+		return positions;
 	}
 
 	private static Vector3 ToVector(string v)

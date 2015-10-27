@@ -28,7 +28,7 @@ public class BuildZoneScript : MonoBehaviour {
 			blockLists[bt] = new ArrayList();
 		}
 		excessiveBlocks = new ArrayList();
-		DataLoader.LoadBlueprint (blueprintFiles[0], blueprint);
+		// DataLoader.LoadBlueprint (blueprintFiles[0], blueprint);
 	}
 
 	public bool Contains(Vector3 position) {
