@@ -35,8 +35,6 @@ public class BlockScript : MonoBehaviour {
 		GameObject block = Instantiate(prefabs[type+"-Trans"]);
 		block.transform.parent = parent.transform;
 		block.transform.localPosition = localPos;
-
-		print ("Created faded");
 		return block;
 	}
 

@@ -1,62 +1,44 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class BlueprintScript : MonoBehaviour {
-	
-	private ArrayList blueprintWood;
-	private ArrayList blueprintDirt;
-	private ArrayList blueprintStone;
+	// Lists local positions of all blocks in blueprint
+	private Dictionary<BlockType, ArrayList> blockLists;
+	// Containers for all the blocks in blueprint
+	private Dictionary<BlockType, GameObject> containers;
 
 	void Awake(){
-		blueprintWood = new ArrayList ();
-		blueprintDirt = new ArrayList ();
-		blueprintStone = new ArrayList ();
-	}
-
-	public void AddPosition(BlockType type, Vector3 vec){
-		if(type == BlockType.Dirt){
-			blueprintDirt.Add(vec);
-		}
-		if(type == BlockType.Wood){
-			blueprintWood.Add(vec);
-		}
-		if(type == BlockType.Stone){
-			blueprintStone.Add(vec);
+		containers = new Dictionary<BlockType, GameObject> ();
+		blockLists = new Dictionary<BlockType, ArrayList> ();
+		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
+			containers[bt] = this.transform.Find(bt + " Blocks").gameObject;
+			blockLists[bt] = new ArrayList();
 		}
 	}
 
-	public bool Contains(BlockType type, Vector3 vec){
-
-		if(type == BlockType.Dirt){
-			return blueprintDirt.Contains(vec);
-		}
-		if(type == BlockType.Wood){
-			return blueprintWood.Contains(vec);
-		}
-		if (type == BlockType.Stone) {
-			return blueprintStone.Contains (vec);
-		} else {
-			return false;
-		}
+	public void AddBlock(BlockType type, Vector3 localPos){
+		BlockScript.CreateFaded (type, localPos, containers[type]);
+		blockLists [type].Add (localPos);
 	}
 
-	public bool CheckSizes(ArrayList woods, ArrayList stones, ArrayList dirts){
-		if (woods.Count == blueprintWood.Count && stones.Count == blueprintStone.Count && dirts.Count == blueprintDirt.Count) {
-			RemoveBlueprint();
-			return true;
-		} else {
-			return false;
-		}
+	public bool Contains(BlockType type, Vector3 globalPos){
+		Vector3 localPos = globalPos - this.transform.position;
+		return blockLists [type].Contains (localPos);
 	}
 
-	private void RemoveBlueprint(){
-//		foreach (Transform child in this.gameObject.transform) {
-//			GameObject.Destroy(child.gameObject);
-//		}
+	public int GetBlockCount(BlockType type) {
+		return blockLists [type].Count;
+	}
 
-		this.GetComponentInParent<BlueprintFactoryScript>().fileName = "SmallStoneHouse";
-		this.GetComponentInParent<BlueprintFactoryScript>().LoadBlueprint();
-
-		Destroy (this.gameObject);
+	public void Clear(){
+		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
+			blockLists[bt] = new ArrayList();
+			// destroy all blocks in container
+			foreach (Transform child in containers[bt].transform) {
+				GameObject.Destroy(child.gameObject);
+			}
+		}
 	}
 }
