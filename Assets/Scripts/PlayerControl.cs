@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using UnityEngine.UI;
 
 [RequireComponent (typeof (Rigidbody))]
 [RequireComponent (typeof (CapsuleCollider))]
@@ -149,6 +150,19 @@ public class PlayerControl: MonoBehaviour
 				}
 			}
 		}
+
+		if(Input.GetMouseButtonDown(0)){
+			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
+			RaycastHit hit;
+			if (Physics.Raycast (ray, out hit)) {
+				string tag = hit.collider.gameObject.tag;
+				if (tag == "Button") {
+					Button b = hit.collider.gameObject.GetComponent<Button>();
+					b.onClick.Invoke();
+				}
+			}
+		}
+
 		// right click
 		if (Input.GetMouseButtonDown (1)) {
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
