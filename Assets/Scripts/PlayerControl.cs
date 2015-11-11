@@ -114,6 +114,15 @@ public class PlayerControl: MonoBehaviour
 		return deltaTime > (1000 / miningSpeed);
 	}
 
+	public void GameStart(){
+		Cursor.visible = false;
+	}
+
+	public void GameStop(){
+		Cursor.visible = true;
+		Application.Quit ();
+	}
+
 	void UpdateAction ()
 	{
 		// left click

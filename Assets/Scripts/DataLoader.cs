@@ -6,17 +6,22 @@ using System;
 public class DataLoader : MonoBehaviour {
 
 	public static void LoadBlueprint(string fileName, BlueprintScript blueprint) {
-		var sr = File.OpenText("Assets/Resources/Blueprints/" + fileName + ".txt");
+		//var sr = File.OpenText("Assets/Resources/Blueprints/" + fileName + ".txt");
+
+		TextAsset file = (TextAsset)Resources.Load("Blueprints/" + fileName, typeof(TextAsset));
+		string text = file.text;
+		
+		System.IO.StringReader reader = new System.IO.StringReader(text);
 		
 		// read data file
-		string line = sr.ReadLine();
+		string line = reader.ReadLine();
 		while (line != null)
 		{
 			string[] data = line.Split(':');
 			if (data[0] == "Position")
 			{
 				blueprint.gameObject.transform.localPosition = ToVector(data[1]);
-				line = sr.ReadLine();
+				line = reader.ReadLine();
 				continue;
 			}
 
@@ -31,9 +36,9 @@ public class DataLoader : MonoBehaviour {
 						blueprint.AddBlock(blockType, ToVector(v));
 				}
 			}
-			line = sr.ReadLine();
+			line = reader.ReadLine();
 		}
-		sr.Close();
+		reader.Close();
 		print("Loaded blueprint succesfully!");
 	}
 

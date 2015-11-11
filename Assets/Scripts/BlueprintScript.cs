@@ -16,6 +16,7 @@ public class BlueprintScript : MonoBehaviour {
 			containers[bt] = this.transform.Find(bt + " Blocks").gameObject;
 			blockLists[bt] = new ArrayList();
 		}
+
 	}
 
 	public void AddBlock(BlockType type, Vector3 localPos){
