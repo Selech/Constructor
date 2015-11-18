@@ -153,6 +153,7 @@ public class PlayerControl: MonoBehaviour
 
 		if(Input.GetMouseButtonDown(0)){
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
+			Debug.DrawRay(cam.transform.position, cam.transform.forward, Color.green);
 			RaycastHit hit;
 			if (Physics.Raycast (ray, out hit)) {
 				string tag = hit.collider.gameObject.tag;
