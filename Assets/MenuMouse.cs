@@ -36,6 +36,7 @@ public class MenuMouse : MonoBehaviour {
 				}
 			}
 			else if(ps != null){
+
 				StopPs();
 			}
 		}

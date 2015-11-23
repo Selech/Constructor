@@ -16,7 +16,6 @@ public class ClickedPlanet : MonoBehaviour {
 	}
 
 	public void Clicked(){
-		print ("Clicked");
 		Camera.main.GetComponent<MenuMouse> ().enabled = false;
 		Camera.main.GetComponent<Animator> ().SetTrigger (trigger);
 	}
