@@ -6,9 +6,6 @@ using System;
 [RequireComponent (typeof (BoxCollider))]
 public class BuildZoneScript : MonoBehaviour {
 
-	//Test
-	public GameObject slut;
-
 	private BoxCollider box;
 	// current blueprint of the build zone
 	private BlueprintScript blueprint;
@@ -31,7 +28,7 @@ public class BuildZoneScript : MonoBehaviour {
 			blockLists[bt] = new ArrayList();
 		}
 		excessiveBlocks = new ArrayList();
-		DataLoader.LoadBlueprint (blueprintFiles[0], blueprint);
+		DataLoader.LoadBlueprint (blueprintFiles[1], blueprint);
 	}
 
 	public bool Contains(Vector3 position) {
@@ -66,9 +63,7 @@ public class BuildZoneScript : MonoBehaviour {
 
 	private void BlueprintFinished() {
 		Clear ();
-		DataLoader.LoadBlueprint (blueprintFiles [1], blueprint);
-		Cursor.visible = true;
-		slut.SetActive (true);
+		DataLoader.LoadBlueprint (blueprintFiles [0], blueprint);
 	}
 
 	private void Clear() {

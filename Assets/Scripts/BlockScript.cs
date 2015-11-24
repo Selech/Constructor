@@ -14,7 +14,7 @@ public class BlockScript : MonoBehaviour {
 	void Awake(){
 		prefabs = LoadPrefabs();
 	}
-
+	
 	// Creates a block 
 	public static GameObject Create(BlockType type, Vector3 localPos, GameObject parent) {
 		if(prefabs == null){
@@ -24,6 +24,7 @@ public class BlockScript : MonoBehaviour {
 		GameObject block = Instantiate(prefabs[type+""]);
 		block.transform.parent = parent.transform;
 		block.transform.localPosition = localPos;
+//		block.GetComponent<MeshRenderer> ().enabled = false;
 		return block;
 	}
 

@@ -23,19 +23,47 @@ public class PlayerControl: MonoBehaviour
 	private Inventory inventory;
 	private GameObject container;
 	private DateTime lastAction;
+
+	private float energy;
+	private float maxEnergy = 100;
+	public Slider energyBar;
+
+	public ParticleSystem ps;
 	
 	// Use this for initialization
 	void Start ()
 	{
+		Cursor.visible = false;
+
 		CapsuleCollider collider = GetComponent<CapsuleCollider>();
 		inventory = GetComponent<Inventory>();
 		container = GameObject.Find ("Blocks");
 		distToGround = collider.bounds.extents.y;
+
+		energy = maxEnergy;
 	}
 
 	void Update(){
 		UpdateLook();
 		UpdateAction();
+
+		Ray ray = new Ray (this.transform.position, this.transform.up);
+		RaycastHit hit;
+		if (Physics.Raycast (ray, out hit)) {
+			if (hit.collider.tag == "Sun") {
+				if(energy < maxEnergy){
+					energy += 1f;
+				}
+			} else {
+				energy -= 0.05f;
+			}
+		}
+		float newEnergy = (energy / maxEnergy);
+		energyBar.value = newEnergy;
+
+		if (Input.GetKey(KeyCode.Escape)) {
+			Application.LoadLevel("Menu");
+		}
 	}
 
 	void FixedUpdate ()
@@ -89,7 +117,7 @@ public class PlayerControl: MonoBehaviour
 		}
 		// jump
 		if (Input.GetKey(KeyCode.Space) && IsGrounded()) {
-			rb.AddForce(this.transform.up * jumpForce);
+			rb.AddForce(ps.transform.position = this.transform.up * jumpForce);
 		}
 
 		// control horizontal max speed
@@ -135,16 +163,19 @@ public class PlayerControl: MonoBehaviour
 				if (tag == "Collectable") {
 					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
 					// Check if block breaks
-					if (bs.Hit (hit.point, miningPower)) {
-						inventory.AddBlock(bs.type);
+					ps.transform.position = hit.point;
+					ps.Play ();
 
-						BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
-						if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
-							bz.BlockRemoved(bs.gameObject);
-						}
+					energy -= 0.05f;
+					inventory.AddBlock(bs.type);
 
-						Destroy(bs.gameObject);
+					BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
+					if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
+						bz.BlockRemoved(bs.gameObject);
 					}
+
+					GameObject.Find("Map").GetComponent<MapGenerator>().UpdateQuad(hit.collider.gameObject);
+
 					// CoOlDoWn
 					lastAction = DateTime.Now;
 				}
