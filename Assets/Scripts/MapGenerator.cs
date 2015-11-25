@@ -3,149 +3,174 @@ using System.Collections;
 
 public class MapGenerator : MonoBehaviour {
 
+	private const byte EMPTY = 0;
+	private const byte DIRT = 1;
+	private const byte STONE = 2;
+	private const byte WOOD = 3;
+
+
+	public Vector3 dimensions;
 	public GameObject buildZone;
-	public int layers;
 	private GameObject container;
-
-	private byte[,,] map;
-
 	public Material dirt;
 	public Material stone;
+	public Material wood;
 
-	public int quads = 0;
-
+	private byte[,,] mapData;
+	
 	// Use this for initialization
 	void Start () {
-		map = new byte[75,layers+30,75];
+		mapData = new byte[(int)dimensions.x, (int)dimensions.y, (int)dimensions.z];
 		container = GameObject.Find ("Blocks");
-		GenerateMap (layers,75,75);
+		GenerateMap();
+		CalculateQuads ();
 	}
 
-	void GenerateMap(int height, int depth, int width){
+	void GenerateMap(){
 		BuildZoneScript bs = buildZone.GetComponent<BuildZoneScript>();
-		for(int x = 0; x < width; x++){
-			for(int y = 0; y < height; y++){
-				for(int z = 0; z < depth; z++){
+		MapElevator elevator = GetComponent<MapElevator> ();//
+		Random.seed = 100;
+
+		for (int x = 0; x < dimensions.x; x++) {
+			for(int z = 0; z < dimensions.z; z++){
+				// get the elevation of the coordinate
+				int e = elevator.GetElevation(x, z);
+
+				for(int y = 0; y < e; y++) {
 					Vector3 blockPos = new Vector3(x, y, z);
 					// Ignore positions colliding with the build zone
 					if (bs.Contains(blockPos)) {
-						FindSides(x,y,z);
 						continue;
 					}
 					// Generates blocks
-					map[x, y, z] = PickBlock(blockPos);
-					FindSides(x,y,z);
+					mapData[x, y, z] = PickBlock(blockPos);
 				}
-			}
-		}
-
-		for (int x = 0; x < width; x++) {
-			for (int z = 0; z < depth; z++) {
-				FindSides(x,height,z);
 			}
 		}
 	}
 
 	byte PickBlock(Vector3 position){
-		if(position.y < 2){
-			return 2;
+		// bottom 4 layers are all stone
+		if(position.y < 4){
+			return STONE;
 		}
-		if(position.y < 3 && Random.Range (0,2) == 0){
-			return 2;
+		// 80 % chance of stone, 20 % dirt if layer is [5-10]
+		if(position.y < 10){
+			return Random.value < 0.2f ? DIRT : STONE;
 		}
-
-		return 1;
+		// 50 % chance of stone, 50 % dirt if layer is [11-20]
+		if(position.y < 20){
+			return Random.value < 0.5f ? DIRT : STONE;
+		}
+		// 10 % chance of stone, 90 % dirt if layer is 21+
+		return Random.value < 0.9f ? DIRT : STONE;
 	}
 
-	void FindSides(int x, int y, int z){
-		if(x != 0){
-			if(map[x, y, z] == 0){
-				if (map [x - 1,  y,  z] != 0) {
-					//Laver right quad
-					GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-					left.transform.position = new Vector3(x-1,y,z) + new Vector3(0.5f,0,0);
-					left.transform.rotation = Quaternion.Euler(0f,-90f,0f);
-					left.name = "right";
-					SetType(map[x-1,y,z], left);
+	void CalculateQuads() {
+		// calculates surfaces of all blocks
+		for (int x = 0; x < dimensions.x; x++) {
+			for(int y = 0; y < dimensions.y; y++){
+				for(int z = 0; z < dimensions.z; z++) {
+					// no block
+					if (mapData[x, y, z] == EMPTY)
+						continue;
+					else
+						CalculateSurface(x, y, z);
 				}
 			}
-
-			else if (map [x - 1,  y,  z] == 0) {
-				//Laver left quad
-				GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-				left.transform.position = new Vector3(x,y,z) + new Vector3(-0.5f,0,0);
-				left.transform.rotation = Quaternion.Euler(0f,90f,0f);
-				left.name = "left";
-				SetType(map[x,y,z], left);
-			}
-		}
-
-		if( y != 0){
-			if(map[x, y, z] == 0){
-				if (map [x,  y - 1,  z] != 0) {
-					//Laver top quad
-					GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-					left.transform.position = new Vector3(x,y-1,z) + new Vector3(0,0.5f,0);
-					left.transform.rotation = Quaternion.Euler(90f,0f,0f);
-					left.name = "top";
-					SetType(map[x,y-1,z], left);
-				}
-			}
-			else  if (map [ x,  y - 1,  z] == 0) {
-				//Laver bottom quad
-				GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-				left.transform.position = new Vector3(x,y,z) + new Vector3(0,-0.5f,0);
-				left.transform.rotation = Quaternion.Euler(-90f,0,0f);
-				left.name = "bottom";
-				SetType(map[x,y,z], left);
-			}
-		}
-
-		if( z != 0){
-			if(map[x, y, z] == 0){
-				if (map [x,  y,  z - 1] != 0) {
-					//Laver back quad
-					GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-					left.transform.position = new Vector3(x,y,z-1) + new Vector3(0f,0,0.5f);
-					left.transform.rotation = Quaternion.Euler(0f,-180f,0f);
-					left.name = "back";
-					SetType(map[x,y,z-1], left);
-				}
-			}
-
-			else if (map [ x,  y,  z - 1] == 0) {
-				//Laver front quad
-				GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-				left.transform.position = new Vector3(x,y,z) + new Vector3(0,0f,-0.5f);
-				left.transform.rotation = Quaternion.Euler(0f,0,0f);
-				left.name = "front";
-				SetType(map[x,y,z], left);
-			}
-		}
-
-	}
-
-	private void SetType(int i, GameObject obj){
-		quads++;
-
-		BlockScript bs = obj.AddComponent<BlockScript>();
-		Destroy (obj.GetComponent<MeshCollider> ());
-		obj.AddComponent<BoxCollider> ();
-		obj.tag = "Collectable";
-
-		if(i == 1){
-			bs.type = BlockType.Dirt;
-			obj.GetComponent<MeshRenderer>().material = dirt;
-		}
-		else{
-			bs.type = BlockType.Stone;
-			obj.GetComponent<MeshRenderer>().material = stone;
 		}
 	}
 
-	public void UpdateQuad(GameObject quad){
+	private void CreateQuad(Vector3 pos, string face) {
+		GameObject quad = GameObject.CreatePrimitive (PrimitiveType.Quad);
+
+		switch (face) {
+		case "top":
+			quad.transform.position = pos + new Vector3 (0f, 0.5f, 0f);
+			quad.transform.rotation = Quaternion.Euler (90f, 0f, 0f);
+			break;
+		case "bottom":
+			quad.transform.position = pos + new Vector3 (0, -0.5f, 0);
+			quad.transform.rotation = Quaternion.Euler (-90f, 0, 0f);
+			break;
+		case "left":
+			quad.transform.position = pos + new Vector3 (-0.5f, 0f, 0f);
+			quad.transform.rotation = Quaternion.Euler (0f, 90f, 0f);
+			break;
+		case "right":
+			quad.transform.position = pos + new Vector3 (0.5f, 0f, 0f);
+			quad.transform.rotation = Quaternion.Euler (0f, -90f, 0f);
+			break;
+		case "front":
+			quad.transform.position = pos + new Vector3 (0f, 0f, 0.5f);
+			quad.transform.rotation = Quaternion.Euler (0f, -180f, 0f);
+			break;
+		case "back":
+			quad.transform.position = pos + new Vector3 (0f, 0f, -0.5f);
+			quad.transform.rotation = Quaternion.Euler (0f, 0f, 0f);
+			break;
+		default: 
+			Destroy (quad);
+			return;
+		}
+
+		// initialize quad
+		quad.name = face;
+		quad.AddComponent<BlockScript> ();
+		Destroy (quad.GetComponent<MeshCollider> ());
+		quad.AddComponent<BoxCollider> ();
+		quad.tag = "Collectable";
+		quad.transform.parent = container.transform;
+
+		// set texture of the block
+		switch (mapData [(int)pos.x, (int)pos.y, (int)pos.z]) {
+		case DIRT:
+			quad.GetComponent<MeshRenderer> ().material = dirt;
+			break;
+		case STONE:
+			quad.GetComponent<MeshRenderer> ().material = stone;
+			break;
+		case WOOD:
+			quad.GetComponent<MeshRenderer> ().material = wood;
+			break;
+		default:
+			Destroy (quad);
+			break;
+		}
+	}
+
+	void CalculateSurface(int x, int y, int z){
+		Vector3 pos = new Vector3 (x, y, z);
+
+		// check top
+		if (y < dimensions.y - 1 && mapData [x, y + 1, z] == EMPTY) {
+			CreateQuad(pos, "top");
+		}
+		// check bottom
+		if (y > 0 && mapData [x, y - 1, z] == EMPTY) {
+			CreateQuad(pos, "bottom");
+		}
+		// check left
+		if (x > 0 && mapData [x - 1, y, z] == EMPTY) {
+			CreateQuad(pos, "left");
+		}
+		// check right
+		if (x < dimensions.x - 1 && mapData [x + 1, y, z] == EMPTY) {
+			CreateQuad(pos, "right");
+		}
+		// check front
+		if (z < dimensions.z - 1 && mapData [x, y, z + 1] == EMPTY) {
+			CreateQuad(pos, "front");
+		}
+		// check back
+		if (z > 0 && mapData [x, y, z - 1] == EMPTY) {
+			CreateQuad(pos, "back");
+		}
+	}
+
+	public void DestroyBlock(GameObject quad){
+		// find position of the block of this quad
 		Vector3 pos = quad.transform.position;
-
 		switch (quad.name) {
 		case "top": 
 			pos += new Vector3(0,-0.5f,0); break;
@@ -168,106 +193,75 @@ public class MapGenerator : MonoBehaviour {
 		default:
 			break;
 		}
+		// destroy the block
+		DestroySurface(pos);
+		int x = (int)pos.x;
+		int y = (int)pos.y;
+		int z = (int)pos.z;
+		mapData[(int)pos.x, (int)pos.y, (int)pos.z] = EMPTY;
 
-		DestroyQuads (pos);
-		map [(int)pos.x, (int)pos.y, (int)pos.z] = 0;
-
-		if(map [(int)pos.x, (int)pos.y+1, (int)pos.z] != 0){
-			GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			left.transform.position = new Vector3((int)pos.x, (int)pos.y+1, (int)pos.z) + new Vector3(0,-0.5f,0);
-			left.transform.rotation = Quaternion.Euler(-90f,0,0f);
-			left.name = "bottom";
-			SetType(map[(int)pos.x, (int)pos.y+1, (int)pos.z], left);
-		}
-
-		if(map [(int)pos.x, (int)pos.y-1, (int)pos.z] != 0){
-			GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			left.transform.position = new Vector3((int)pos.x, (int)pos.y-1, (int)pos.z) + new Vector3(0,0.5f,0);
-			left.transform.rotation = Quaternion.Euler(90f,0f,0f);
-			left.name = "top";
-			SetType(map[(int)pos.x, (int)pos.y-1, (int)pos.z], left);
-		}
-
-		if(map [(int)pos.x-1, (int)pos.y, (int)pos.z] != 0){
-			GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			left.transform.position = new Vector3((int)pos.x-1, (int)pos.y, (int)pos.z) + new Vector3(0.5f,0,0);
-			left.transform.rotation = Quaternion.Euler(0f,-90f,0f);
-			left.name = "right";
-			SetType(map[(int)pos.x-1, (int)pos.y, (int)pos.z], left);
-		}
-
-		if(map [(int)pos.x+1, (int)pos.y, (int)pos.z] != 0){
-			GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			left.transform.position = new Vector3((int)pos.x+1, (int)pos.y, (int)pos.z) + new Vector3(-0.5f,0,0);
-			left.transform.rotation = Quaternion.Euler(0f,90f,0f);
-			left.name = "left";
-			SetType(map[(int)pos.x+1, (int)pos.y, (int)pos.z], left);
-		}
-
-		if(map [(int)pos.x, (int)pos.y, (int)pos.z-1] != 0){
-			GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			left.transform.position = new Vector3((int)pos.x, (int)pos.y, (int)pos.z-1) + new Vector3(0f,0,0.5f);
-			left.transform.rotation = Quaternion.Euler(0f,-180f,0f);
-			left.name = "back";
-			SetType(map[(int)pos.x, (int)pos.y, (int)pos.z-1], left);
-		}
-
-		if(map [(int)pos.x, (int)pos.y, (int)pos.z+1] != 0){
-			GameObject left = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			left.transform.position = new Vector3((int)pos.x, (int)pos.y, (int)pos.z) + new Vector3(0f,0,0.5f);
-			left.transform.rotation = Quaternion.Euler(0f,0f,0f);
-			left.name = "back";
-			SetType(map[(int)pos.x, (int)pos.y, (int)pos.z+1], left);
-		}
+		// calculate surface of the neightbors
+		// top
+		CalculateSurface (x, y + 1, z);
+		// bottom
+		CalculateSurface (x, y - 1, z);
+		// left
+		CalculateSurface (x - 1, y, z);
+		// right
+		CalculateSurface (x + 1, y, z);
+		// front
+		CalculateSurface (x, y, z + 1);
+		// back
+		CalculateSurface (x, y, z - 1);
 	}
 
-	private void DestroyQuads(Vector3 pos){
+	private void DestroySurface(Vector3 pos){
 		Ray ray = new Ray (pos, Vector3.up);
 		RaycastHit hit;
+		// top
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
-			print ("hit up");
 			if(hit.collider.tag == "Collectable"){
-				quads--;
+				print("killed top");
 				Destroy(hit.collider.gameObject);
 			}
 		}
-
+		// right
 		ray.direction = Vector3.right;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				quads--;
+				print("killed right");
 				Destroy(hit.collider.gameObject);
 			}
 		}
-
+		// bottom
 		ray.direction = Vector3.down;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				quads--;
+				print("killed bottom");
 				Destroy(hit.collider.gameObject);
 			}
 		}
-
+		// left
 		ray.direction = Vector3.left;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				quads--;
+				print("killed left");
 				Destroy(hit.collider.gameObject);
 			}
 		}
-
+		// front
 		ray.direction = Vector3.forward;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				quads--;
+				print("killed front");
 				Destroy(hit.collider.gameObject);
 			}
 		}
-
+		// back
 		ray.direction = Vector3.back;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				quads--;
+				print("killed back");
 				Destroy(hit.collider.gameObject);
 			}
 		}
