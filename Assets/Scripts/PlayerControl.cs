@@ -29,6 +29,7 @@ public class PlayerControl: MonoBehaviour
 	public Slider energyBar;
 
 	public ParticleSystem ps;
+	public Light flashlight;
 	
 	// Use this for initialization
 	void Start ()
@@ -47,17 +48,23 @@ public class PlayerControl: MonoBehaviour
 		UpdateLook();
 		UpdateAction();
 
+		//If flashlight is on, then drain more energy
+		if(flashlight.enabled){
+			energy -= 0.10f;
+		}
+
 		Ray ray = new Ray (this.transform.position, this.transform.up);
 		RaycastHit hit;
 		if (Physics.Raycast (ray, out hit)) {
 			if (hit.collider.tag == "Sun") {
 				if(energy < maxEnergy){
-					energy += 1f;
+					energy += 0.5f;
 				}
 			} else {
 				energy -= 0.05f;
 			}
 		}
+
 		float newEnergy = (energy / maxEnergy);
 		energyBar.value = newEnergy;
 
@@ -69,6 +76,10 @@ public class PlayerControl: MonoBehaviour
 	void FixedUpdate ()
 	{
 		UpdateMovement();
+	}
+
+	public void Damage(float damage){
+		energy -= damage;
 	}
 
 	void UpdateLook() {
@@ -131,6 +142,10 @@ public class PlayerControl: MonoBehaviour
 			horizontalVelocity *= 1 - breakingSpeed;
 			rb.velocity = new Vector3(horizontalVelocity.x, rb.velocity.y, horizontalVelocity.y);
 		}
+
+		if (Input.GetKeyDown (KeyCode.L)) {
+			flashlight.enabled = !flashlight.enabled;
+		}
 	}
 
 	bool IsGrounded() {
@@ -154,6 +169,7 @@ public class PlayerControl: MonoBehaviour
 
 	void UpdateAction ()
 	{
+
 		// left click
 		if (Input.GetMouseButton (0) && canPerformAction()) {
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
@@ -162,7 +178,23 @@ public class PlayerControl: MonoBehaviour
 				string tag = hit.collider.gameObject.tag;
 				if (tag == "Collectable") {
 					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
-					// Check if block breaks
+
+					switch(bs.type){
+						case BlockType.Stone:
+						ps.startColor = ToColor("DFDFDFFF");
+						break;
+
+						case BlockType.Dirt:
+						ps.startColor = ToColor("CBBAA7FF");
+						break;
+
+						case BlockType.Wood:
+						ps.startColor = ToColor("A69568FF");
+						break;
+
+						default:
+						break;
+					}
 					ps.transform.position = hit.point;
 					ps.Play ();
 
@@ -217,5 +249,12 @@ public class PlayerControl: MonoBehaviour
 				}
 			}
 		}
+	}
+
+	private Color ToColor(string hex){
+		byte r = byte.Parse(hex.Substring(0,2), System.Globalization.NumberStyles.HexNumber);
+		byte g = byte.Parse(hex.Substring(2,2), System.Globalization.NumberStyles.HexNumber);
+		byte b = byte.Parse(hex.Substring(4,2), System.Globalization.NumberStyles.HexNumber);
+		return new Color32(r,g,b, 255);
 	}
 }

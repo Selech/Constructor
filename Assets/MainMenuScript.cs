@@ -3,6 +3,9 @@ using System.Collections;
 
 public class MainMenuScript : MonoBehaviour {
 
+	public GameObject Introduction;
+	public GameObject Controls;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -14,7 +17,8 @@ public class MainMenuScript : MonoBehaviour {
 	}
 
 	public void ShowInstructions(){
-
+		Introduction.SetActive (!Introduction.activeSelf);
+		Controls.SetActive (!Controls.activeSelf);
 	}
 
 	public void GoToOverview(){
