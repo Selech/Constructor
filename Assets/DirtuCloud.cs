@@ -9,18 +9,22 @@ public class DirtuCloud : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+		moveX = Random.Range (1, 200);
+		moveZ = Random.Range (1, 200);
+		
+		target = new Vector3(moveX, this.transform.position.y, moveZ);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		print (Vector3.Distance(this.transform.position, target));
+		Vector2 pos = new Vector2(this.transform.position.x, this.transform.position.z);
+		Vector2 target2D = new Vector2(target.x, target.z);
 
-		if(Vector3.Distance(this.transform.position, target) < 5){
-			moveX = Random.Range (1, 74);
-			moveZ = Random.Range (1, 74);
+		if(Vector2.Distance(pos, target2D) < 5){
+			moveX = Random.Range (1, 200);
+			moveZ = Random.Range (1, 200);
 
-			target = new Vector3(this.transform.position.x + moveX, this.transform.position.y, this.transform.position.z + moveZ);
+			target = new Vector3(moveX, this.transform.position.y, moveZ);
 		}
 
 		Ray ray = new Ray (this.transform.position, Vector3.down);
@@ -28,7 +32,7 @@ public class DirtuCloud : MonoBehaviour {
 		if (Physics.Raycast (ray, out hit)) {
 			target = new Vector3(target.x, hit.collider.gameObject.transform.position.y + 5, target.z);
 
-			this.transform.position = Vector3.MoveTowards(this.transform.position, new Vector3(target.x, hit.collider.gameObject.transform.position.y + 5, target.z), 0.025f);
+			this.transform.position = Vector3.MoveTowards(this.transform.position, target, 0.05f);
 		}
 	}
 

@@ -56,26 +56,30 @@ public class MapGenerator : MonoBehaviour {
 		}
 		// 80 % chance of stone, 20 % dirt if layer is [5-10]
 		if(position.y < 10){
-			return Random.value < 0.2f ? DIRT : STONE;
+			return Random.value < 0.1f ? DIRT : STONE;
 		}
 		// 50 % chance of stone, 50 % dirt if layer is [11-20]
-		if(position.y < 20){
-			return Random.value < 0.5f ? DIRT : STONE;
+		if(position.y < 13){
+			return Random.value < 0.4f ? DIRT : STONE;
 		}
-		// 10 % chance of stone, 90 % dirt if layer is 21+
-		return Random.value < 0.9f ? DIRT : STONE;
+
+		if(position.y < 15){
+			return Random.value < 0.7f ? DIRT : STONE;
+		}
+
+		// 5 % chance of stone, 95 % dirt if layer is 15+
+		return Random.value < 0.95f ? DIRT : STONE;
 	}
 
 	void CalculateQuads() {
 		// calculates surfaces of all blocks
 		for (int x = 0; x < dimensions.x; x++) {
-			for(int y = 0; y < dimensions.y; y++){
-				for(int z = 0; z < dimensions.z; z++) {
-					// no block
-					if (mapData[x, y, z] == EMPTY)
-						continue;
-					else
-						CalculateSurface(x, y, z);
+			for(int z = 0; z < dimensions.z; z++) {
+				for(int y = 0; y < dimensions.y; y++){
+					if(mapData[x,y,z] == EMPTY){
+						break;
+					}
+					CalculateSurface(x, y, z);
 				}
 			}
 		}
@@ -116,7 +120,7 @@ public class MapGenerator : MonoBehaviour {
 
 		// initialize quad
 		quad.name = face;
-		quad.AddComponent<BlockScript> ();
+		BlockScript bs = quad.AddComponent<BlockScript> ();
 		Destroy (quad.GetComponent<MeshCollider> ());
 		quad.AddComponent<BoxCollider> ();
 		quad.tag = "Collectable";
@@ -125,12 +129,15 @@ public class MapGenerator : MonoBehaviour {
 		// set texture of the block
 		switch (mapData [(int)pos.x, (int)pos.y, (int)pos.z]) {
 		case DIRT:
+			bs.type = BlockType.Dirt;
 			quad.GetComponent<MeshRenderer> ().material = dirt;
 			break;
 		case STONE:
+			bs.type = BlockType.Stone;
 			quad.GetComponent<MeshRenderer> ().material = stone;
 			break;
 		case WOOD:
+			bs.type = BlockType.Wood;
 			quad.GetComponent<MeshRenderer> ().material = wood;
 			break;
 		default:
@@ -140,7 +147,16 @@ public class MapGenerator : MonoBehaviour {
 	}
 
 	void CalculateSurface(int x, int y, int z){
+		if(y < 0 || y >= dimensions.y || x < 0 || x >= dimensions.x || z < 0 || z >= dimensions.z){
+			return;
+		}
+
+		if (mapData [x, y, z] == EMPTY) {
+			return;
+		}
+
 		Vector3 pos = new Vector3 (x, y, z);
+		DestroySurface (pos);
 
 		// check top
 		if (y < dimensions.y - 1 && mapData [x, y + 1, z] == EMPTY) {
@@ -171,8 +187,6 @@ public class MapGenerator : MonoBehaviour {
 	public void DestroyBlock(GameObject quad){
 		// find position of the block of this quad
 		Vector3 pos = quad.transform.position;
-		print ("----------------- HIT ----------------- ");
-		print ("Hit " + quad.name);
 
 		switch (quad.name) {
 		case "top": 
@@ -222,49 +236,43 @@ public class MapGenerator : MonoBehaviour {
 		Ray ray = new Ray (pos, Vector3.up);
 		RaycastHit hit;
 		// top
-		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
+		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("Removed top");
 				Destroy(hit.collider.gameObject);
 			}
 		}
 		// right
 		ray.direction = Vector3.right;
-		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
+		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("Removed right");
 				Destroy(hit.collider.gameObject);
 			}
 		}
 		// bottom
 		ray.direction = Vector3.down;
-		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
+		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("Removed bottom");
 				Destroy(hit.collider.gameObject);
 			}
 		}
 		// left
 		ray.direction = Vector3.left;
-		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
+		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("Removed left");
 				Destroy(hit.collider.gameObject);
 			}
 		}
 		// front
 		ray.direction = Vector3.forward;
-		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
+		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("Removed back");
 				Destroy(hit.collider.gameObject);
 			}
 		}
 		// back
 		ray.direction = Vector3.back;
-		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
+		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("Removed front");
 				Destroy(hit.collider.gameObject);
 			}
 		}
