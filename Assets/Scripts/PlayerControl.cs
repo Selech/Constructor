@@ -206,7 +206,7 @@ public class PlayerControl: MonoBehaviour
 						bz.BlockRemoved(bs.gameObject);
 					}
 
-					GameObject.Find("Map").GetComponent<MapGenerator>().UpdateQuad(hit.collider.gameObject);
+					GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(hit.collider.gameObject);
 
 					// CoOlDoWn
 					lastAction = DateTime.Now;
