@@ -101,11 +101,11 @@ public class MapGenerator : MonoBehaviour {
 			quad.transform.position = pos + new Vector3 (0.5f, 0f, 0f);
 			quad.transform.rotation = Quaternion.Euler (0f, -90f, 0f);
 			break;
-		case "front":
+		case "back":
 			quad.transform.position = pos + new Vector3 (0f, 0f, 0.5f);
 			quad.transform.rotation = Quaternion.Euler (0f, -180f, 0f);
 			break;
-		case "back":
+		case "front":
 			quad.transform.position = pos + new Vector3 (0f, 0f, -0.5f);
 			quad.transform.rotation = Quaternion.Euler (0f, 0f, 0f);
 			break;
@@ -160,17 +160,20 @@ public class MapGenerator : MonoBehaviour {
 		}
 		// check front
 		if (z < dimensions.z - 1 && mapData [x, y, z + 1] == EMPTY) {
-			CreateQuad(pos, "front");
+			CreateQuad(pos, "back");
 		}
 		// check back
 		if (z > 0 && mapData [x, y, z - 1] == EMPTY) {
-			CreateQuad(pos, "back");
+			CreateQuad(pos, "front");
 		}
 	}
 
 	public void DestroyBlock(GameObject quad){
 		// find position of the block of this quad
 		Vector3 pos = quad.transform.position;
+		print ("----------------- HIT ----------------- ");
+		print ("Hit " + quad.name);
+
 		switch (quad.name) {
 		case "top": 
 			pos += new Vector3(0,-0.5f,0); break;
@@ -221,7 +224,7 @@ public class MapGenerator : MonoBehaviour {
 		// top
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("killed top");
+				print("Removed top");
 				Destroy(hit.collider.gameObject);
 			}
 		}
@@ -229,7 +232,7 @@ public class MapGenerator : MonoBehaviour {
 		ray.direction = Vector3.right;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("killed right");
+				print("Removed right");
 				Destroy(hit.collider.gameObject);
 			}
 		}
@@ -237,7 +240,7 @@ public class MapGenerator : MonoBehaviour {
 		ray.direction = Vector3.down;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("killed bottom");
+				print("Removed bottom");
 				Destroy(hit.collider.gameObject);
 			}
 		}
@@ -245,7 +248,7 @@ public class MapGenerator : MonoBehaviour {
 		ray.direction = Vector3.left;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("killed left");
+				print("Removed left");
 				Destroy(hit.collider.gameObject);
 			}
 		}
@@ -253,7 +256,7 @@ public class MapGenerator : MonoBehaviour {
 		ray.direction = Vector3.forward;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("killed front");
+				print("Removed back");
 				Destroy(hit.collider.gameObject);
 			}
 		}
@@ -261,7 +264,7 @@ public class MapGenerator : MonoBehaviour {
 		ray.direction = Vector3.back;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.85f)) {
 			if(hit.collider.tag == "Collectable"){
-				print("killed back");
+				print("Removed front");
 				Destroy(hit.collider.gameObject);
 			}
 		}
