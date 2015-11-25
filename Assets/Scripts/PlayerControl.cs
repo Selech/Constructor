@@ -174,7 +174,7 @@ public class PlayerControl: MonoBehaviour
 		if (Input.GetMouseButton (0) && canPerformAction()) {
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
 			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit)) {
+			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
 				string tag = hit.collider.gameObject.tag;
 				if (tag == "Collectable") {
 					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
@@ -218,7 +218,7 @@ public class PlayerControl: MonoBehaviour
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
 			Debug.DrawRay(cam.transform.position, cam.transform.forward, Color.green);
 			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit)) {
+			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
 				string tag = hit.collider.gameObject.tag;
 				if (tag == "Button") {
 					Button b = hit.collider.gameObject.GetComponent<Button>();
@@ -232,7 +232,7 @@ public class PlayerControl: MonoBehaviour
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
 			RaycastHit hit;
 		
-			if (Physics.Raycast (ray, out hit)) {
+			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
 				// Checks if the clicked object can be build upon
 				if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
 					// Checks if inventory have any of the chosen blocks left
