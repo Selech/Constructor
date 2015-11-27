@@ -21,7 +21,7 @@ public class ComputerScript : MonoBehaviour {
 	}
 
 	public void LoadBlueprint(){
-
+		print ("Should load blueprint");
 	}
 
 	public void SendBlueprint(){

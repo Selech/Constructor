@@ -30,6 +30,12 @@ public class PlayerControl: MonoBehaviour
 
 	public ParticleSystem ps;
 	public Light flashlight;
+
+	public GameObject HUD;
+	public GameObject PauseMenu;
+	public GameObject OrderMenu;
+	public GameObject UpgradeMenu;
+	public GameObject deathScreen;
 	
 	// Use this for initialization
 	void Start ()
@@ -45,8 +51,19 @@ public class PlayerControl: MonoBehaviour
 	}
 
 	void Update(){
+		//Flashlight
+		if (Input.GetKeyDown (KeyCode.L)) {
+			flashlight.enabled = !flashlight.enabled;
+		}
+
 		UpdateLook();
 		UpdateAction();
+
+		if(energy <= 0){
+			deathScreen.SetActive(true);
+			HUD.SetActive(false);
+			this.enabled = false;
+		}
 
 		//If flashlight is on, then drain more energy
 		if(flashlight.enabled){
@@ -69,7 +86,9 @@ public class PlayerControl: MonoBehaviour
 		energyBar.value = newEnergy;
 
 		if (Input.GetKey(KeyCode.Escape)) {
-			Application.LoadLevel("Menu");
+			HUD.SetActive(false);
+			PauseMenu.SetActive(true);
+			this.enabled = false;
 		}
 	}
 
@@ -142,10 +161,6 @@ public class PlayerControl: MonoBehaviour
 			horizontalVelocity *= 1 - breakingSpeed;
 			rb.velocity = new Vector3(horizontalVelocity.x, rb.velocity.y, horizontalVelocity.y);
 		}
-
-		if (Input.GetKeyDown (KeyCode.L)) {
-			flashlight.enabled = !flashlight.enabled;
-		}
 	}
 
 	bool IsGrounded() {
@@ -158,11 +173,11 @@ public class PlayerControl: MonoBehaviour
 		return deltaTime > (1000 / miningSpeed);
 	}
 
-	public void GameStart(){
+	void OnEnable(){
 		Cursor.visible = false;
 	}
 
-	public void GameStop(){
+	void OnDisable(){
 		Cursor.visible = true;
 		Application.Quit ();
 	}
