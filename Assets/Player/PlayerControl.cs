@@ -25,7 +25,8 @@ public class PlayerControl: MonoBehaviour
 	private DateTime lastAction;
 
 	private float energy;
-	private float maxEnergy = 100;
+	private float maxEnergy;
+	private float range;
 	public Slider energyBar;
 
 	public ParticleSystem ps;
@@ -46,8 +47,16 @@ public class PlayerControl: MonoBehaviour
 		inventory = GetComponent<Inventory>();
 		container = GameObject.Find ("Blocks");
 		distToGround = collider.bounds.extents.y;
+		UpdateStats ();
+
 
 		energy = maxEnergy;
+	}
+
+	public void UpdateStats(){
+		maxEnergy = UpgradesScript.GetBattery ();
+		jumpForce = UpgradesScript.GetJumpJets ();
+		range = UpgradesScript.GetRange ();
 	}
 
 	void Update(){
@@ -189,7 +198,7 @@ public class PlayerControl: MonoBehaviour
 		if (Input.GetMouseButton (0) && canPerformAction()) {
 			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
 			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
+			if (Physics.Raycast (ray, out hit, maxDistance: range)) {
 				string tag = hit.collider.gameObject.tag;
 				if (tag == "Collectable") {
 					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
@@ -265,6 +274,8 @@ public class PlayerControl: MonoBehaviour
 			}
 		}
 	}
+
+
 
 	private Color ToColor(string hex){
 		byte r = byte.Parse(hex.Substring(0,2), System.Globalization.NumberStyles.HexNumber);

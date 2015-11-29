@@ -9,8 +9,8 @@ public class DirtuCloud : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		moveX = Random.Range (1, 200);
-		moveZ = Random.Range (1, 200);
+		moveX = Random.Range (1, 95);
+		moveZ = Random.Range (1, 95);
 		
 		target = new Vector3(moveX, this.transform.position.y, moveZ);
 	}
@@ -21,8 +21,8 @@ public class DirtuCloud : MonoBehaviour {
 		Vector2 target2D = new Vector2(target.x, target.z);
 
 		if(Vector2.Distance(pos, target2D) < 5){
-			moveX = Random.Range (1, 200);
-			moveZ = Random.Range (1, 200);
+			moveX = Random.Range (1, 95);
+			moveZ = Random.Range (1, 95);
 
 			target = new Vector3(moveX, this.transform.position.y, moveZ);
 		}
