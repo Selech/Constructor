@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 [RequireComponent (typeof (Rigidbody))]
 [RequireComponent (typeof (CapsuleCollider))]
-[RequireComponent (typeof (Inventory))]
 public class PlayerControl: MonoBehaviour
 {
 	public Camera cam;
@@ -16,100 +15,31 @@ public class PlayerControl: MonoBehaviour
 	public float breakingSpeed;
 	public float airSpeedAmp;
 	private float jumpForce;
-	public float miningSpeed;
-	public float miningPower;
-	private int hitcount;
 	private float distToGround;
-	private Inventory inventory;
-	private GameObject container;
-	private DateTime lastAction;
 
-	private float energy;
-	private float maxEnergy;
-	private float range;
-	public Slider energyBar;
-
-	public ParticleSystem ps;
-	public Light flashlight;
-
-	public GameObject HUD;
-	public GameObject PauseMenu;
-	public GameObject OrderMenu;
-	public GameObject UpgradeMenu;
-	public GameObject deathScreen;
-	
 	// Use this for initialization
 	void Start ()
 	{
 		Cursor.visible = false;
 
 		CapsuleCollider collider = GetComponent<CapsuleCollider>();
-		inventory = GetComponent<Inventory>();
-		container = GameObject.Find ("Blocks");
+
 		distToGround = collider.bounds.extents.y;
-		UpdateStats ();
-
-
-		energy = maxEnergy;
-	}
-
-	public void UpdateStats(){
-		maxEnergy = UpgradesScript.GetBattery ();
-		jumpForce = UpgradesScript.GetJumpJets ();
-		range = UpgradesScript.GetRange ();
 	}
 
 	void Update(){
-		//Flashlight
-		if (Input.GetKeyDown (KeyCode.L)) {
-			flashlight.enabled = !flashlight.enabled;
-		}
-
 		UpdateLook();
-		UpdateAction();
+	}
 
-		if(energy <= 0){
-			deathScreen.SetActive(true);
-			HUD.SetActive(false);
-			this.enabled = false;
-		}
-
-		//If flashlight is on, then drain more energy
-		if(flashlight.enabled){
-			energy -= 0.10f;
-		}
-
-		Ray ray = new Ray (this.transform.position, this.transform.up);
-		RaycastHit hit;
-		if (Physics.Raycast (ray, out hit)) {
-			if (hit.collider.tag == "Sun") {
-				if(energy < maxEnergy){
-					energy += 0.5f;
-				}
-			} else {
-				energy -= 0.05f;
-			}
-		}
-
-		float newEnergy = (energy / maxEnergy);
-		energyBar.value = newEnergy;
-
-		if (Input.GetKey(KeyCode.Escape)) {
-			HUD.SetActive(false);
-			PauseMenu.SetActive(true);
-			this.enabled = false;
-		}
+	public void SetJumpForce(float force) {
+		jumpForce = force;
 	}
 
 	void FixedUpdate ()
 	{
 		UpdateMovement();
 	}
-
-	public void Damage(float damage){
-		energy -= damage;
-	}
-
+	
 	void UpdateLook() {
 		// horizontal turning
 		float mx = Input.GetAxis ("Mouse X");
@@ -156,7 +86,7 @@ public class PlayerControl: MonoBehaviour
 		}
 		// jump
 		if (Input.GetKey(KeyCode.Space) && IsGrounded()) {
-			rb.AddForce(ps.transform.position = this.transform.up * jumpForce, ForceMode.VelocityChange);
+			rb.AddForce(this.transform.up * jumpForce, ForceMode.VelocityChange);
 		}
 
 		// control horizontal max speed
@@ -176,111 +106,12 @@ public class PlayerControl: MonoBehaviour
 		return Physics.Raycast(this.transform.position, -Vector3.up, distToGround + 0.05f);
 	}
 
-	private bool canPerformAction() {
-		// Time difference in milli seconds
-		long deltaTime = (DateTime.Now.Ticks - lastAction.Ticks) / TimeSpan.TicksPerMillisecond;
-		return deltaTime > (1000 / miningSpeed);
-	}
-
 	void OnEnable(){
 		Cursor.visible = false;
 	}
 
 	void OnDisable(){
 		Cursor.visible = true;
-		Application.Quit ();
-	}
-
-	void UpdateAction ()
-	{
-
-		// left click
-		if (Input.GetMouseButton (0) && canPerformAction()) {
-			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit, maxDistance: range)) {
-				string tag = hit.collider.gameObject.tag;
-				if (tag == "Collectable") {
-					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
-
-					switch(bs.type){
-						case BlockType.Stone:
-						ps.startColor = ToColor("DFDFDFFF");
-						break;
-
-						case BlockType.Dirt:
-						ps.startColor = ToColor("CBBAA7FF");
-						break;
-
-						case BlockType.Wood:
-						ps.startColor = ToColor("A69568FF");
-						break;
-
-						default:
-						break;
-					}
-					ps.transform.position = hit.point;
-					ps.Play ();
-
-					energy -= 0.05f;
-					inventory.AddBlock(bs.type);
-
-					BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
-					if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
-						bz.BlockRemoved(bs.gameObject);
-					}
-
-					GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(hit.collider.gameObject);
-
-					// CoOlDoWn
-					lastAction = DateTime.Now;
-				}
-			}
-		}
-
-		if(Input.GetMouseButtonDown(0)){
-			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-			Debug.DrawRay(cam.transform.position, cam.transform.forward, Color.green);
-			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
-				string tag = hit.collider.gameObject.tag;
-				if (tag == "Button") {
-					Button b = hit.collider.gameObject.GetComponent<Button>();
-					b.onClick.Invoke();
-				}
-			}
-		}
-
-		// right click
-		if (Input.GetMouseButtonDown (1)) {
-			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-			RaycastHit hit;
-		
-			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
-				// Checks if the clicked object can be build upon
-				if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
-					// Checks if inventory have any of the chosen blocks left
-					if (inventory.RemoveBlock()) {
-						Vector3 blockCoord = hit.collider.gameObject.GetComponent<Buildable>().GetBlockPosition(hit);
-						GameObject block = BlockScript.Create(inventory.GetChosen(), blockCoord, container);
-
-						BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
-						if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(block.transform.position)){
-							bz.BlockAdded(block);
-						}
-
-					}
-				}
-			}
-		}
-	}
-
-
-
-	private Color ToColor(string hex){
-		byte r = byte.Parse(hex.Substring(0,2), System.Globalization.NumberStyles.HexNumber);
-		byte g = byte.Parse(hex.Substring(2,2), System.Globalization.NumberStyles.HexNumber);
-		byte b = byte.Parse(hex.Substring(4,2), System.Globalization.NumberStyles.HexNumber);
-		return new Color32(r,g,b, 255);
+		//Application.Quit ();
 	}
 }

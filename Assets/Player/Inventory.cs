@@ -5,7 +5,7 @@ using System;
 
 public class Inventory : MonoBehaviour {
 	
-	public Dictionary<BlockType, int> collected;
+	public Dictionary<byte, int> collected;
 	public Text AmountOfDirt;
 	public Text AmountOfStone;
 	public Text AmountOfWood;
@@ -15,36 +15,39 @@ public class Inventory : MonoBehaviour {
 	private GameObject dirt;
 	private GameObject wood;
 	
-	private BlockType chosen;
+	private byte chosen;
 	
 	// Use this for initialization
 	void Start () {
-		chosen = BlockType.Dirt;
-		collected = new Dictionary<BlockType, int> ();
-		foreach (BlockType bt in Enum.GetValues(typeof(BlockType))) {
-			collected[bt] = 0;
-		}
+		chosen = 1;
+		collected = new Dictionary<byte, int> ();
+
+		collected[0] = 0;
+		collected[1] = 0;
+		collected[2] = 0;
+		collected[3] = 0;
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Alpha1)) {
-			chosen = BlockType.Dirt;
+			chosen = 1;
 			UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
 		}
 		
 		if (Input.GetKeyDown (KeyCode.Alpha2)) {
-			chosen = BlockType.Stone;
+			chosen = 2;
 			UIMarker.rectTransform.localPosition = new Vector3(-95,50,0);
 		}
 		
 		if (Input.GetKeyDown (KeyCode.Alpha3)) {
-			chosen = BlockType.Wood;
+			chosen = 3;
 			UIMarker.rectTransform.localPosition = new Vector3(0,50,0);
 		}
 	}
 	
-	public void AddBlock(BlockType type){
+	public void AddBlock(byte type){
 		collected[type]++;
 		UpdateText ();
 	}
@@ -61,13 +64,13 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
-	public BlockType GetChosen() {
+	public byte GetChosen() {
 		return chosen;
 	}
 
 	private void UpdateText(){
-		AmountOfDirt.text = collected[BlockType.Dirt] + "";
-		AmountOfStone.text = collected[BlockType.Stone] + "";
-		AmountOfWood.text = collected[BlockType.Wood] + "";
+		AmountOfDirt.text = collected[1] + "";
+		AmountOfStone.text = collected[2] + "";
+		AmountOfWood.text = collected[3] + "";
 	}
 }

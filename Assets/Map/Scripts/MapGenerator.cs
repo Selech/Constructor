@@ -130,16 +130,16 @@ public class MapGenerator : MonoBehaviour {
 
 		// set texture of the block
 		switch (mapData [(int)pos.x, (int)pos.y, (int)pos.z]) {
-		case DIRT:
-			bs.type = BlockType.Dirt;
+		case 1:
+			bs.type = 1;
 			quad.GetComponent<MeshRenderer> ().material = dirt;
 			break;
-		case STONE:
-			bs.type = BlockType.Stone;
+		case 2:
+			bs.type = 2;
 			quad.GetComponent<MeshRenderer> ().material = stone;
 			break;
-		case WOOD:
-			bs.type = BlockType.Wood;
+		case 3:
+			bs.type = 3;
 			quad.GetComponent<MeshRenderer> ().material = wood;
 			break;
 		default:
@@ -184,6 +184,22 @@ public class MapGenerator : MonoBehaviour {
 		if (z > 0 && mapData [x, y, z - 1] == EMPTY) {
 			CreateQuad(pos, "front");
 		}
+	}
+
+	public void PlaceBlock(Vector3 pos, byte type) {
+		int x = (int)pos.x;
+		int y = (int)pos.y;
+		int z = (int)pos.z;
+
+		mapData[x, y, z] = type;
+		CalculateSurface (x, y, z);
+		CalculateSurface (x-1, y, z);
+		CalculateSurface (x+1, y, z);
+		CalculateSurface (x, y-1, z);
+		CalculateSurface (x, y+1, z);
+		CalculateSurface (x, y, z-1);
+		CalculateSurface (x, y, z+1);
+
 	}
 
 	public void DestroyBlock(GameObject quad){

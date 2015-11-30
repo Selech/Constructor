@@ -38,7 +38,7 @@ public class DirtuCloud : MonoBehaviour {
 
 	void OnTriggerStay(Collider other){
 		if (other.tag == "Player") {
-			other.GetComponent<PlayerControl>().Damage(1f);
+			other.GetComponent<PlayerScript>().Damage(1f);
 		}
 	}
 }
