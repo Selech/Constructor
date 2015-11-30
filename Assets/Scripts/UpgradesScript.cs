@@ -8,6 +8,8 @@ public class UpgradesScript : MonoBehaviour {
 	public Text energy;
 	public Text jump;
 
+	public static bool reset;
+
 	public Button rangeButton;
 	public Button energyButton;
 	public Button jumpButton;
@@ -17,18 +19,25 @@ public class UpgradesScript : MonoBehaviour {
 		if(PlayerPrefs.GetFloat ("MaxEnergy") == 0){
 			PlayerPrefs.SetFloat("MaxEnergy", 100);
 			PlayerPrefs.SetFloat("Range", 3.0f);
-			PlayerPrefs.SetFloat("JumpJets", 25f);
+			PlayerPrefs.SetFloat("JumpJets", 6f);
 
 			PlayerPrefs.SetInt("Money", 0);
 		}
-
 	}
 
 	private static void checker(){
+		if(true){
+			PlayerPrefs.SetFloat("MaxEnergy", 100);
+			PlayerPrefs.SetFloat("Range", 3.0f);
+			PlayerPrefs.SetFloat("JumpJets", 6f);
+			
+			PlayerPrefs.SetInt("Money", 0);
+		}
+
 		if(PlayerPrefs.GetFloat ("MaxEnergy") == 0){
 			PlayerPrefs.SetFloat("MaxEnergy", 100);
 			PlayerPrefs.SetFloat("Range", 3.0f);
-			PlayerPrefs.SetFloat("JumpJets", 25f);
+			PlayerPrefs.SetFloat("JumpJets", 6f);
 			
 			PlayerPrefs.SetInt("Money", 0);
 		}
@@ -42,7 +51,7 @@ public class UpgradesScript : MonoBehaviour {
 	void OnEnable(){
 		range.text = "Upgrade range: " + (PlayerPrefs.GetFloat ("Range")) + ">" + (PlayerPrefs.GetFloat ("Range") + 1f);
 		energy.text = "Upgrade energy: " + (PlayerPrefs.GetFloat ("MaxEnergy")) + ">" + (PlayerPrefs.GetFloat ("MaxEnergy") + 20f);
-		jump.text = "Upgrade energy: " + (PlayerPrefs.GetFloat ("JumpJets")) + ">" + (PlayerPrefs.GetFloat ("JumpJets") + 2f);
+		jump.text = "Upgrade energy: " + (PlayerPrefs.GetFloat ("JumpJets")) + ">" + (PlayerPrefs.GetFloat ("JumpJets") + 3f);
 
 		if(PlayerPrefs.GetInt("Money") > 20){
 			rangeButton.interactable = true;
@@ -62,7 +71,7 @@ public class UpgradesScript : MonoBehaviour {
 	}
 
 	public void AddJumpJets(){
-		PlayerPrefs.SetFloat("JumpJets", PlayerPrefs.GetFloat ("JumpJets") + 2f);
+		PlayerPrefs.SetFloat("JumpJets", PlayerPrefs.GetFloat ("JumpJets") + 3f);
 		OnEnable ();
 	}
 
@@ -82,6 +91,7 @@ public class UpgradesScript : MonoBehaviour {
 
 	public static float GetJumpJets(){
 		checker ();
+		print (PlayerPrefs.GetFloat ("JumpJets"));
 		return PlayerPrefs.GetFloat ("JumpJets");
 	}
 

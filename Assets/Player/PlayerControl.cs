@@ -15,7 +15,7 @@ public class PlayerControl: MonoBehaviour
 	public float maxSpeed;
 	public float breakingSpeed;
 	public float airSpeedAmp;
-	public float jumpForce;
+	private float jumpForce;
 	public float miningSpeed;
 	public float miningPower;
 	private int hitcount;
@@ -156,7 +156,7 @@ public class PlayerControl: MonoBehaviour
 		}
 		// jump
 		if (Input.GetKey(KeyCode.Space) && IsGrounded()) {
-			rb.AddForce(ps.transform.position = this.transform.up * jumpForce);
+			rb.AddForce(ps.transform.position = this.transform.up * jumpForce, ForceMode.VelocityChange);
 		}
 
 		// control horizontal max speed

@@ -8,6 +8,7 @@ public class MapGenerator : MonoBehaviour {
 	private const byte STONE = 2;
 	private const byte WOOD = 3;
 
+	public PhysicMaterial quadPhysics;
 
 	public Vector3 dimensions;
 	public GameObject buildZone;
@@ -122,7 +123,8 @@ public class MapGenerator : MonoBehaviour {
 		quad.name = face;
 		BlockScript bs = quad.AddComponent<BlockScript> ();
 		Destroy (quad.GetComponent<MeshCollider> ());
-		quad.AddComponent<BoxCollider> ();
+		BoxCollider bc = quad.AddComponent<BoxCollider> ();
+		bc.material = quadPhysics;
 		quad.tag = "Collectable";
 		quad.transform.parent = container.transform;
 
