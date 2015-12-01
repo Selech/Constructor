@@ -20,10 +20,7 @@ public class PlayerControl: MonoBehaviour
 	// Use this for initialization
 	void Start ()
 	{
-		Cursor.visible = false;
-
 		CapsuleCollider collider = GetComponent<CapsuleCollider>();
-
 		distToGround = collider.bounds.extents.y;
 	}
 
@@ -104,14 +101,5 @@ public class PlayerControl: MonoBehaviour
 
 	bool IsGrounded() {
 		return Physics.Raycast(this.transform.position, -Vector3.up, distToGround + 0.05f);
-	}
-
-	void OnEnable(){
-		Cursor.visible = false;
-	}
-
-	void OnDisable(){
-		Cursor.visible = true;
-		//Application.Quit ();
 	}
 }

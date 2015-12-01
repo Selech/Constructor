@@ -1,36 +1,42 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent (typeof(MapElevator))]
 public class MapGenerator : MonoBehaviour {
-
-	private const byte EMPTY = 0;
-	private const byte DIRT = 1;
-	private const byte STONE = 2;
-	private const byte WOOD = 3;
-
-	public PhysicMaterial quadPhysics;
-
+	// size of map
 	public Vector3 dimensions;
-	public GameObject buildZone;
-	private GameObject container;
+	// seed for generation of the map
+	public int seed;
+	// materials for the blocks
 	public Material dirt;
 	public Material stone;
 	public Material wood;
+	public PhysicMaterial quadPhysics;
 
+	private MapElevator elevator;
+	private GameObject container;
 	private byte[,,] mapData;
 	
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 		mapData = new byte[(int)dimensions.x, (int)dimensions.y, (int)dimensions.z];
-		container = GameObject.Find ("Blocks");
-		GenerateMap();
-		CalculateQuads ();
+		container = new GameObject ("Blocks");
+		elevator = GetComponent<MapElevator> ();
 	}
 
-	void GenerateMap(){
-		BuildZoneScript bs = buildZone.GetComponent<BuildZoneScript>();
-		MapElevator elevator = GetComponent<MapElevator> ();//
-		Random.seed = 100;
+	public Vector3 GetRandomSpawnPoint() {
+		int x = Random.Range (10, (int)dimensions.x - 10);
+		int z = Random.Range (10, (int)dimensions.z - 10);
+		int y = elevator.GetElevation (x, z) + 4;
+
+		return new Vector3 (x, y, z);
+	}
+
+	// generates the map
+	public void GenerateMap(){
+		// generate elevation
+		elevator.GenerateElevation (seed+10);
+		Random.seed = seed;
 
 		for (int x = 0; x < dimensions.x; x++) {
 			for(int z = 0; z < dimensions.z; z++){
@@ -38,46 +44,43 @@ public class MapGenerator : MonoBehaviour {
 				int e = elevator.GetElevation(x, z);
 
 				for(int y = 0; y < e; y++) {
-					Vector3 blockPos = new Vector3(x, y, z);
-					// Ignore positions colliding with the build zone
-					if (bs.Contains(blockPos)) {
-						continue;
-					}
 					// Generates blocks
-					mapData[x, y, z] = PickBlock(blockPos);
+					mapData[x, y, z] = PickBlock(x, y, z);
 				}
 			}
 		}
+		CalculateQuads ();
 	}
 
-	byte PickBlock(Vector3 position){
+	// Generate a block based on the position
+	byte PickBlock(int x, int y, int z){
 		// bottom 4 layers are all stone
-		if(position.y < 4){
-			return STONE;
+		if(y < 4){
+			return BlockType.STONE;
 		}
 		// 80 % chance of stone, 20 % dirt if layer is [5-10]
-		if(position.y < 10){
-			return Random.value < 0.1f ? DIRT : STONE;
+		if(y < 10){
+			return Random.value < 0.1f ? BlockType.DIRT : BlockType.STONE;
 		}
 		// 50 % chance of stone, 50 % dirt if layer is [11-20]
-		if(position.y < 13){
-			return Random.value < 0.4f ? DIRT : STONE;
+		if(y < 13){
+			return Random.value < 0.4f ? BlockType.DIRT : BlockType.STONE;
 		}
 
-		if(position.y < 15){
-			return Random.value < 0.7f ? DIRT : STONE;
+		if(y < 15){
+			return Random.value < 0.7f ? BlockType.DIRT : BlockType.STONE;
 		}
 
 		// 5 % chance of stone, 95 % dirt if layer is 15+
-		return Random.value < 0.95f ? DIRT : STONE;
+		return Random.value < 0.95f ? BlockType.DIRT : BlockType.STONE;
 	}
 
+	// Calculates surfaces of all blocks
 	void CalculateQuads() {
-		// calculates surfaces of all blocks
 		for (int x = 0; x < dimensions.x; x++) {
 			for(int z = 0; z < dimensions.z; z++) {
 				for(int y = 0; y < dimensions.y; y++){
-					if(mapData[x,y,z] == EMPTY){
+					if(mapData[x,y,z] == BlockType.EMPTY){
 						break;
 					}
 					CalculateSurface(x, y, z);
@@ -85,7 +88,7 @@ public class MapGenerator : MonoBehaviour {
 			}
 		}
 	}
-
+	
 	private void CreateQuad(Vector3 pos, string face) {
 		GameObject quad = GameObject.CreatePrimitive (PrimitiveType.Quad);
 
@@ -130,16 +133,16 @@ public class MapGenerator : MonoBehaviour {
 
 		// set texture of the block
 		switch (mapData [(int)pos.x, (int)pos.y, (int)pos.z]) {
-		case 1:
-			bs.type = 1;
+		case BlockType.DIRT:
+			bs.type = BlockType.DIRT;
 			quad.GetComponent<MeshRenderer> ().material = dirt;
 			break;
-		case 2:
-			bs.type = 2;
+		case BlockType.STONE:
+			bs.type = BlockType.STONE;
 			quad.GetComponent<MeshRenderer> ().material = stone;
 			break;
-		case 3:
-			bs.type = 3;
+		case BlockType.WOOD:
+			bs.type = BlockType.WOOD;
 			quad.GetComponent<MeshRenderer> ().material = wood;
 			break;
 		default:
@@ -153,7 +156,7 @@ public class MapGenerator : MonoBehaviour {
 			return;
 		}
 
-		if (mapData [x, y, z] == EMPTY) {
+		if (mapData [x, y, z] == BlockType.EMPTY) {
 			return;
 		}
 
@@ -161,27 +164,27 @@ public class MapGenerator : MonoBehaviour {
 		DestroySurface (pos);
 
 		// check top
-		if (y < dimensions.y - 1 && mapData [x, y + 1, z] == EMPTY) {
+		if (y < dimensions.y - 1 && mapData [x, y + 1, z] == BlockType.EMPTY) {
 			CreateQuad(pos, "top");
 		}
 		// check bottom
-		if (y > 0 && mapData [x, y - 1, z] == EMPTY) {
+		if (y > 0 && mapData [x, y - 1, z] == BlockType.EMPTY) {
 			CreateQuad(pos, "bottom");
 		}
 		// check left
-		if (x > 0 && mapData [x - 1, y, z] == EMPTY) {
+		if (x > 0 && mapData [x - 1, y, z] == BlockType.EMPTY) {
 			CreateQuad(pos, "left");
 		}
 		// check right
-		if (x < dimensions.x - 1 && mapData [x + 1, y, z] == EMPTY) {
+		if (x < dimensions.x - 1 && mapData [x + 1, y, z] == BlockType.EMPTY) {
 			CreateQuad(pos, "right");
 		}
 		// check front
-		if (z < dimensions.z - 1 && mapData [x, y, z + 1] == EMPTY) {
+		if (z < dimensions.z - 1 && mapData [x, y, z + 1] == BlockType.EMPTY) {
 			CreateQuad(pos, "back");
 		}
 		// check back
-		if (z > 0 && mapData [x, y, z - 1] == EMPTY) {
+		if (z > 0 && mapData [x, y, z - 1] == BlockType.EMPTY) {
 			CreateQuad(pos, "front");
 		}
 	}
@@ -233,7 +236,7 @@ public class MapGenerator : MonoBehaviour {
 		int x = (int)pos.x;
 		int y = (int)pos.y;
 		int z = (int)pos.z;
-		mapData[(int)pos.x, (int)pos.y, (int)pos.z] = EMPTY;
+		mapData[(int)pos.x, (int)pos.y, (int)pos.z] = BlockType.EMPTY;
 
 		// calculate surface of the neightbors
 		// top

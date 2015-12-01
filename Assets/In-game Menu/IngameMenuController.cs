@@ -13,11 +13,5 @@ public class IngameMenuController : MonoBehaviour {
 	
 	}
 
-	public void Redeploy(){
-		Application.LoadLevel (Application.loadedLevel);
-	}
 
-	public void ReturnToShip(){
-		Application.LoadLevel ("Menu");
-	}
 }

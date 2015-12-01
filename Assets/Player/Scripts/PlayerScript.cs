@@ -7,22 +7,16 @@ using UnityEngine.UI;
 public class PlayerScript : MonoBehaviour {
 	public float miningSpeed;
 	public float miningPower;
-	private int hitcount;
 	private Inventory inventory;
-	private GameObject container;
 	private DateTime lastAction;
 	private float energy;
 	private float maxEnergy;
 	private float range;
-	public Slider energyBar;
 	public Light flashlight;
 	public Camera cam;
 	public ParticleSystem ps;
 	private PlayerControl control;
-	
-	public GameObject HUD;
-	public GameObject PauseMenu;
-	public GameObject deathScreen;
+
 
 	// Use this for initialization
 	void Start () {
@@ -33,25 +27,24 @@ public class PlayerScript : MonoBehaviour {
 		UpdateStats();
 		energy = maxEnergy;
 	}
+
+	public bool isDead() {
+		return energy <= 0;
+	}
 	
 	// Update is called once per frame
 	void Update () {
-		//Flashlight
+		// turn on/off flashlight
 		if (Input.GetKeyDown (KeyCode.L)) {
 			flashlight.enabled = !flashlight.enabled;
 		}
 
-		if(energy <= 0){
-			deathScreen.SetActive(true);
-			HUD.SetActive(false);
-			control.enabled = false;
-		}
-		
-		//If flashlight is on, then drain more energy
+		//If flash light is on, then drain more energy
 		if(flashlight.enabled){
 			energy -= 0.10f;
 		}
 
+		// check if player is under the sun
 		Ray ray = new Ray (this.transform.position, this.transform.up);
 		RaycastHit hit;
 		if (Physics.Raycast (ray, out hit)) {
@@ -64,16 +57,11 @@ public class PlayerScript : MonoBehaviour {
 			}
 		}
 
-		float newEnergy = (energy / maxEnergy);
-		energyBar.value = newEnergy;
-		
-		if (Input.GetKey(KeyCode.Escape)) {
-			HUD.SetActive(false);
-			PauseMenu.SetActive(true);
-			control.enabled = false;
-		}
-
 		UpdateAction();
+	}
+
+	public float GetEnergy() {
+		return energy / maxEnergy;
 	}
 
 	public void Damage(float damage){
@@ -94,67 +82,86 @@ public class PlayerScript : MonoBehaviour {
 
 	void UpdateAction ()
 	{
-		
-		// left click
-		if (Input.GetMouseButton (0) && canPerformAction()) {
-			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-			RaycastHit hit;
-			if (Physics.Raycast (ray, out hit, maxDistance: range)) {
-				string tag = hit.collider.gameObject.tag;
-				if (tag == "Collectable") {
-					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
-					
-					switch(bs.type){
-					case 2:
-						ps.startColor = ToColor("DFDFDFFF");
-						break;
-						
-					case 1:
-						ps.startColor = ToColor("CBBAA7FF");
-						break;
-						
-					case 3:
-						ps.startColor = ToColor("A69568FF");
-						break;
-						
-					default:
-						break;
-					}
-					ps.transform.position = hit.point;
-					ps.Play ();
-					
-					energy -= 0.05f;
-					inventory.AddBlock(bs.type);
-					
-					BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
-					if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
-						bz.BlockRemoved(bs.gameObject);
-					}
-					
-					GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(hit.collider.gameObject);
-					
-					// CoOlDoWn
-					lastAction = DateTime.Now;
-				}
+		// raycast where crosshair is pointing
+		Ray ray = new Ray (cam.transform.position, cam.transform.forward);
+		RaycastHit hit;
+		bool hasHit = Physics.Raycast (ray, out hit, maxDistance: 5.0f);
+
+		BlueprintScript blueprint = inventory.GetBlueprint();
+
+
+		// if nothing is hit, do nothing
+		if (!hasHit) {
+			if (inventory.IsBlueprintChosen ()) {
+				blueprint.gameObject.SetActive(false);
 			}
+
+			return;
 		}
+
+		// if blueprint is equiped, highlight placement grid
+		if (inventory.IsBlueprintChosen ()) {
+			Vector3 pos = GetBlockPosition(hit);
+			blueprint.MoveTo(pos);
+			blueprint.gameObject.SetActive(true);
+		} else {
+			inventory.GetBlueprint().gameObject.SetActive(false);
+		}
+
+
+		// left click (mine)
+//		if (Input.GetMouseButton (0) && canPerformAction()) {
+//			if (hasHit) {
+//				string tag = hit.collider.gameObject.tag;
+//				if (tag == "Collectable") {
+//					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
+//					
+//					switch(bs.type){
+//					case BlockType.STONE:
+//						ps.startColor = ToColor("DFDFDFFF");
+//						break;
+//						
+//					case BlockType.DIRT:
+//						ps.startColor = ToColor("CBBAA7FF");
+//						break;
+//						
+//					case BlockType.WOOD:
+//						ps.startColor = ToColor("A69568FF");
+//						break;
+//						
+//					default:
+//						break;
+//					}
+//					ps.transform.position = hit.point;
+//					ps.Play ();
+//					
+//					energy -= 0.05f;
+//					inventory.AddBlock(bs.type);
+//					
+//					BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
+//					if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
+//						bz.BlockRemoved(bs.gameObject);
+//					}
+//					
+//					GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(hit.collider.gameObject);
+//					
+//					// Cooldown
+//					lastAction = DateTime.Now;
+//				}
+//			}
+//		}
 		
 		// right click
-		if (Input.GetMouseButtonDown (1)) {
-			Ray ray = new Ray (cam.transform.position, cam.transform.forward);
-			RaycastHit hit;
-			
-			if (Physics.Raycast (ray, out hit, maxDistance: 3.0f)) {
-				// Checks if the clicked object can be build upon
-				if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
-					// Checks if inventory have any of the chosen blocks left
-					if (inventory.RemoveBlock()) {
-						GameObject.Find("Map").GetComponent<MapGenerator>().PlaceBlock(GetBlockPosition(hit), inventory.GetChosen());
-						
-					}
-				}
-			}
-		}
+//		if (Input.GetMouseButtonDown (1) && hasHit) {
+//			// Checks if the clicked object can be build upon
+//			if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
+//				// Checks if inventory have any of the chosen blocks left
+//				if (inventory.RemoveBlock()) {
+//					GameObject.Find("Map").GetComponent<MapGenerator>().PlaceBlock(GetBlockPosition(hit), inventory.GetChosen());
+//					
+//				}
+//			}
+//		}
 	}
 
 	public Vector3 GetBlockPosition(RaycastHit hit) {

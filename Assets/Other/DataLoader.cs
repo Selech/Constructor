@@ -6,35 +6,45 @@ using System;
 public class DataLoader : MonoBehaviour {
 
 	public static void LoadBlueprint(string fileName, BlueprintScript blueprint) {
-//		//var sr = File.OpenText("Assets/Resources/Blueprints/" + fileName + ".txt");
-//
+		//var sr = File.OpenText("Assets/Resources/Blueprints/" + fileName + ".txt");
+
 //		TextAsset file = (TextAsset)Resources.Load("Blueprints/" + fileName, typeof(TextAsset));
 //		string text = file.text;
-//		
 //		System.IO.StringReader reader = new System.IO.StringReader(text);
-//		
+//
+//		// create new blueprint
+//		GameObject obj = new GameObject ();
+//		BlueprintScript blueprint = obj.AddComponent<BlueprintScript> ();
+//
+//
 //		// read data file
 //		string line = reader.ReadLine();
+//		// read dimensions
+//		String[] data = line.Split (':');
+//		Vector3 dimensions = ToVector (data[1]);
+//		int ax = int.Parse (data[2].Trim());
+//		int ay = int.Parse (data[3].Trim());
+//		Vector2 anchor = new Vector2(ax, ay);
+//		line = reader.ReadLine ();
+//
+//		byte[,,] bpData = new byte[(int)dimensions.x, (int)dimensions.y, (int)dimensions.z];
+//
+//		// read block data
 //		while (line != null)
 //		{
-//			string[] data = line.Split(':');
-//			if (data[0] == "Position")
-//			{
-//				blueprint.gameObject.transform.localPosition = ToVector(data[1]);
-//				line = reader.ReadLine();
-//				continue;
-//			}
-//
 //			// if data exists
 //			if(data[1] != ""){
-//				BlockType blockType = (BlockType)Enum.Parse(typeof(BlockType), data[0]);
+//				byte blockType = byte.Parse(data[0]);
 //
-//				// creates the blocks
+//				// loads the blocks
 //				foreach(string v in data[1].Split(';'))
 //				{
-//					if (v != "")
-//						blueprint.AddBlock(blockType, ToVector(v));
+//					if (v != "") {
+//						Vector3 pos = ToVector(v);
+//						bpData[(int)pos.x, (int)pos.y, (int)pos.z] = blockType;
+//					}
 //				}
+//				blueprint.SetBlockData(type, blockData);
 //			}
 //			line = reader.ReadLine();
 //		}

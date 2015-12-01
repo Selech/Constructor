@@ -2,28 +2,13 @@
 using System.Collections;
 
 public class MapElevator : MonoBehaviour {
-	public int cycle = 25;
+	public int cycle;
 	public int elevationSpan;
-	public int maxElevationChange = 4;
-	public int surfaceLevel = 20; 
-	private int seed = 100;
+	public int maxElevationChange;
+	public int surfaceLevel; 
 	private float[,] elevation;
 
-	// Use this for initialization
-	void Awake () {
-		GenerateElevation ();
-//		print(GetElevation (0,0));
-//		print(GetElevation (elevationSpan,0));
-//		print(GetElevation (0,elevationSpan));
-//		print(GetElevation (elevationSpan,elevationSpan));
-//		print(GetElevation (4, 4));
-//		print(GetElevation (12, 4));
-//		print(GetElevation (8, 8));
-//		print(GetElevation (4, 12));
-//		print(GetElevation (12, 12));
-	}
-
-	private void GenerateElevation() {
+	public void GenerateElevation(int seed) {
 		Random.seed = seed;
 		elevation = new float[cycle, cycle];
 		for (int i = 0; i < cycle; i++) {

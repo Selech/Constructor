@@ -91,7 +91,6 @@ public class UpgradesScript : MonoBehaviour {
 
 	public static float GetJumpJets(){
 		checker ();
-		print (PlayerPrefs.GetFloat ("JumpJets"));
 		return PlayerPrefs.GetFloat ("JumpJets");
 	}
 
