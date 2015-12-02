@@ -22,11 +22,14 @@ public class UIManager : MonoBehaviour
 	void Update ()
 	{
 		// Activate pause menu
-		if (Input.GetKey(KeyCode.Escape)) {
+		if (Input.GetKey(KeyCode.Escape) && !gm.IsPaused()) {
 			HUD.SetActive(false);
 			pauseMenu.SetActive(true);
 			gm.Pause();
+
 		}
+
+
 	}
 
 	public void SetEnergy (float val)

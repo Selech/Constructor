@@ -3,11 +3,9 @@ using System.Collections;
 using System.IO;
 using System;
 
-public class DataLoader : MonoBehaviour {
+public class DataLoader {
 
-	public static void LoadBlueprint(string fileName, BlueprintScript blueprint) {
-		//var sr = File.OpenText("Assets/Resources/Blueprints/" + fileName + ".txt");
-
+	public static BlueprintScript LoadBlueprint(string fileName) {
 //		TextAsset file = (TextAsset)Resources.Load("Blueprints/" + fileName, typeof(TextAsset));
 //		string text = file.text;
 //		System.IO.StringReader reader = new System.IO.StringReader(text);
@@ -16,11 +14,12 @@ public class DataLoader : MonoBehaviour {
 //		GameObject obj = new GameObject ();
 //		BlueprintScript blueprint = obj.AddComponent<BlueprintScript> ();
 //
-//
 //		// read data file
 //		string line = reader.ReadLine();
 //		// read dimensions
-//		String[] data = line.Split (':');
+//		String[] data = line.Split (',');
+//		int w = int.Parse(data);
+//		Vector3 dim = new Vector3(int.Parse(data[1]));
 //		Vector3 dimensions = ToVector (data[1]);
 //		int ax = int.Parse (data[2].Trim());
 //		int ay = int.Parse (data[3].Trim());
@@ -50,25 +49,25 @@ public class DataLoader : MonoBehaviour {
 //		}
 //		reader.Close();
 //		print("Loaded blueprint succesfully!");
+		return null;
 	}
 
-	public static void SaveBlueprint(string fileName, BlueprintScript blueprint) {
-//		var sr = File.CreateText("Assets/Resources/Blueprints/" + fileName + ".txt");
-//		// Write local position of blueprint
-//		sr.WriteLine("Position:" + blueprint.gameObject.transform.localPosition);
-//		// saves all positions of the blocks
-//		foreach(BlockType bt in Enum.GetValues(typeof(BlockType))) {
-//			string line = bt + ":";
-//			GameObject container = blueprint.transform.Find(bt + " Blocks").gameObject;
-//			foreach (Vector3 v in GetBlockPositions(container))
-//			{
-//				line += v + ";";
-//			}
-//			line.TrimEnd(';');
-//			sr.WriteLine(line);
-//		}
-//		sr.Close();
-//		print("Saved blueprint succesfully!");
+	public static void SaveBlueprint(string fileName, int w, int h, int d, int ax, int az, byte[,,] data) {
+		var sr = File.CreateText("Assets/Resources/Blueprints/" + fileName + ".txt");
+		// Write the data of the blueprint
+		sr.WriteLine(+ w + "," + h + "," + d + "," + ax + "," + az);
+		// saves all positions of the blocks
+		for (int x = 0; x < w; x++) {
+			string line = "";
+			for (int y = 0; y < h; y++) {
+				for (int z = 0; z < d; z++) {
+					line += data[x, y, z] + ",";
+				}
+				line = line.TrimEnd(',') + ";";
+			}
+			sr.WriteLine(line.TrimEnd(';'));
+		}
+		sr.Close();
 	}
 
 	private static ArrayList GetBlockPositions(GameObject container) {

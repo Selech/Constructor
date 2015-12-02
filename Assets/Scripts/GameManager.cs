@@ -29,6 +29,10 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public bool IsPaused() {
+		return !player.enabled;
+	}
+
 	public void Pause() {
 		Cursor.visible = true;
 		control.enabled = false;
