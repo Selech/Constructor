@@ -22,10 +22,13 @@ public class PlayerControl: MonoBehaviour
 	{
 		CapsuleCollider collider = GetComponent<CapsuleCollider>();
 		distToGround = collider.bounds.extents.y;
+
+
 	}
 
 	void Update(){
 		UpdateLook();
+
 	}
 
 	public void SetJumpForce(float force) {
@@ -38,6 +41,8 @@ public class PlayerControl: MonoBehaviour
 	}
 	
 	void UpdateLook() {
+
+
 		// horizontal turning
 		float mx = Input.GetAxis ("Mouse X");
 		if (mx != 0) {

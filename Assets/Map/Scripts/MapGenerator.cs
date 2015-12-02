@@ -11,7 +11,10 @@ public class MapGenerator : MonoBehaviour {
 	public Material dirt;
 	public Material stone;
 	public Material wood;
+	public Material electric;
+	public ParticleSystem electricParticles;
 	public PhysicMaterial quadPhysics;
+	public GameObject water;
 
 	private MapElevator elevator;
 	private GameObject container;
@@ -60,6 +63,10 @@ public class MapGenerator : MonoBehaviour {
 		}
 		// 80 % chance of stone, 20 % dirt if layer is [5-10]
 		if(y < 10){
+			if(Random.value < 0.005f){
+				print ("elect");
+				return BlockType.ELECTRIC;
+			}
 			return Random.value < 0.1f ? BlockType.DIRT : BlockType.STONE;
 		}
 		// 50 % chance of stone, 50 % dirt if layer is [11-20]
@@ -144,6 +151,14 @@ public class MapGenerator : MonoBehaviour {
 		case BlockType.WOOD:
 			bs.type = BlockType.WOOD;
 			quad.GetComponent<MeshRenderer> ().material = wood;
+			break;
+
+		case BlockType.ELECTRIC:
+			bs.type = BlockType.ELECTRIC;
+			quad.GetComponent<MeshRenderer> ().material = electric;
+			GameObject ps = Instantiate(electricParticles.gameObject);
+			ps.transform.position = quad.transform.position;
+			ps.transform.SetParent(quad.transform);
 			break;
 		default:
 			Destroy (quad);

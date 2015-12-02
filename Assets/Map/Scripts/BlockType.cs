@@ -6,4 +6,5 @@ public class BlockType {
 	public const byte DIRT = 1;
 	public const byte STONE = 2;
 	public const byte WOOD = 3;
+	public const byte ELECTRIC = 4;
 }

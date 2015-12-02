@@ -15,7 +15,10 @@ public class PlayerScript : MonoBehaviour {
 	public Light flashlight;
 	public Camera cam;
 	public ParticleSystem ps;
+	public ParticleSystem electricPs;
 	private PlayerControl control;
+
+	public GameObject water;
 
 
 	// Use this for initialization
@@ -41,20 +44,40 @@ public class PlayerScript : MonoBehaviour {
 
 		//If flash light is on, then drain more energy
 		if(flashlight.enabled){
-			energy -= 0.10f;
+			energy -= 0.08f;
 		}
 
 		// check if player is under the sun
 		Ray ray = new Ray (this.transform.position, this.transform.up);
 		RaycastHit hit;
 		if (Physics.Raycast (ray, out hit)) {
-			if (hit.collider.tag == "Sun") {
+			if (hit.collider.tag == "Sun" && !(cam.transform.position.y < water.transform.position.y)) {
 				if(energy < maxEnergy){
-					energy += 0.5f;
+					float gain = 30 / hit.distance + 0.25f;
+					energy += gain;
 				}
-			} else {
-				energy -= 0.05f;
 			}
+			else if (hit.collider.tag == "DirtuCloud") {
+				if(hit.distance < 10f){
+					energy -= 1f;
+				}
+			}
+			else {
+				energy -= 0.07f;
+			}
+		}
+
+		if (cam.transform.position.y < water.transform.position.y) {
+			energy -= 0.4f;
+			RenderSettings.fog = true;
+			RenderSettings.fogColor = new Color (0, 0.15f, 0.2f, 0.5f);
+			RenderSettings.fogDensity = 0.35f;
+			RenderSettings.fogStartDistance = 0.0f;
+		} else {
+			RenderSettings.fog = true;
+			RenderSettings.fogColor = new Color (0.2f, 0.0f, 0.0f, 0.5f);
+			RenderSettings.fogDensity = 0.05f;
+			RenderSettings.fogStartDistance = 10.0f;
 		}
 
 		UpdateAction();
@@ -110,46 +133,41 @@ public class PlayerScript : MonoBehaviour {
 
 
 		// left click (mine)
-//		if (Input.GetMouseButton (0) && canPerformAction()) {
-//			if (hasHit) {
-//				string tag = hit.collider.gameObject.tag;
-//				if (tag == "Collectable") {
-//					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
-//					
-//					switch(bs.type){
-//					case BlockType.STONE:
-//						ps.startColor = ToColor("DFDFDFFF");
-//						break;
-//						
-//					case BlockType.DIRT:
-//						ps.startColor = ToColor("CBBAA7FF");
-//						break;
-//						
-//					case BlockType.WOOD:
-//						ps.startColor = ToColor("A69568FF");
-//						break;
-//						
-//					default:
-//						break;
-//					}
-//					ps.transform.position = hit.point;
-//					ps.Play ();
-//					
-//					energy -= 0.05f;
-//					inventory.AddBlock(bs.type);
-//					
-//					BuildZoneScript bz = GameObject.Find("Build Zone").GetComponent<BuildZoneScript>();
-//					if(GameObject.Find("Build Zone").GetComponent<BuildZoneScript>().Contains(bs.gameObject.transform.position)){
-//						bz.BlockRemoved(bs.gameObject);
-//					}
-//					
-//					GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(hit.collider.gameObject);
-//					
-//					// Cooldown
-//					lastAction = DateTime.Now;
-//				}
-//			}
-//		}
+		if (Input.GetMouseButton (0) && canPerformAction()) {
+			if (hasHit) {
+				string tag = hit.collider.gameObject.tag;
+				if (tag == "Collectable") {
+					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
+					
+					switch(bs.type){
+					case BlockType.STONE:
+						ps.startColor = ToColor("DFDFDFFF");
+						CollectableBlock (bs, hit.point);
+						break;
+						
+					case BlockType.DIRT:
+						ps.startColor = ToColor("CBBAA7FF");
+						CollectableBlock (bs, hit.point);
+						break;
+						
+					case BlockType.WOOD:
+						ps.startColor = ToColor("A69568FF");
+						CollectableBlock (bs, hit.point);
+						break;
+					case BlockType.ELECTRIC:
+						electricPs.startColor = ToColor("A69568FF");
+						RechargableBlock (hit.point);
+						break;
+						
+					default:
+						break;
+					}
+					
+					// Cooldown
+					lastAction = DateTime.Now;
+				}
+			}
+		}
 		
 		// right click
 //		if (Input.GetMouseButtonDown (1) && hasHit) {
@@ -162,6 +180,22 @@ public class PlayerScript : MonoBehaviour {
 //				}
 //			}
 //		}
+	}
+
+	public void CollectableBlock(BlockScript bs, Vector3 hitpoint){
+		ps.transform.position = hitpoint;
+		ps.Play ();
+
+		energy -= 0.05f;
+		inventory.AddBlock(bs.type);
+		
+		GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(bs.gameObject);
+	}
+
+	public void RechargableBlock(Vector3 hitpoint){
+		electricPs.Play ();
+		
+		energy += 1.6f;
 	}
 
 	public Vector3 GetBlockPosition(RaycastHit hit) {

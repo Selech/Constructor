@@ -27,13 +27,8 @@ public class DirtuCloud : MonoBehaviour {
 			target = new Vector3(moveX, this.transform.position.y, moveZ);
 		}
 
-		Ray ray = new Ray (this.transform.position, Vector3.down);
-		RaycastHit hit;
-		if (Physics.Raycast (ray, out hit)) {
-			target = new Vector3(target.x, hit.collider.gameObject.transform.position.y + 5, target.z);
-
-			this.transform.position = Vector3.MoveTowards(this.transform.position, target, 0.05f);
-		}
+		target = new Vector3(target.x, this.transform.position.y, target.z);
+		this.transform.position = Vector3.MoveTowards(this.transform.position, target, 0.05f);
 	}
 
 	void OnTriggerStay(Collider other){

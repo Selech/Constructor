@@ -17,15 +17,17 @@ public class GameManager : MonoBehaviour {
 		control = player.gameObject.GetComponent<PlayerControl> ();
 		generator = GameObject.Find ("Map").GetComponent<MapGenerator> ();
 		generator.GenerateMap ();
-		player.transform.position = generator.GetRandomSpawnPoint ();
+		//player.transform.position = generator.GetRandomSpawnPoint ();
 		Unpause ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		// check if player is dead
-		if(player.isDead()){
-			uim.ShowDeathMenu();
+		if (player.isDead ()) {
+			uim.ShowDeathMenu ();
+		} else {
+			uim.SetEnergy(player.GetEnergy());
 		}
 	}
 
