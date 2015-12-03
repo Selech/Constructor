@@ -19,7 +19,7 @@ public class PlayerScript : MonoBehaviour {
 	private PlayerControl control;
 
 	public GameObject water;
-
+	public GameObject cube;
 
 	// Use this for initialization
 	void Start () {
@@ -118,8 +118,22 @@ public class PlayerScript : MonoBehaviour {
 			if (inventory.IsBlueprintChosen ()) {
 				blueprint.gameObject.SetActive(false);
 			}
+			cube.SetActive(false);
 
 			return;
+		}
+
+		if(hasHit){
+			if(hit.distance < 2.5f && hit.collider.gameObject.tag == "Collectable"){
+				cube.SetActive(true);
+				cube.GetComponent<BuildingBlock>().SetMaterial(0);
+				cube.GetComponent<BuildingBlock>().SetHighlightPosition(hit.collider.gameObject);
+			}
+			else if(hit.collider.gameObject.tag == "Collectable" || hit.collider.gameObject.tag == "Buildable"){
+				cube.SetActive(true);
+				cube.GetComponent<BuildingBlock>().SetMaterial(inventory.GetChosenBlock());
+				cube.GetComponent<BuildingBlock>().SetBlockPosition(hit.collider.gameObject);
+			}
 		}
 
 		// if blueprint is equiped, highlight placement grid
