@@ -17,10 +17,9 @@ public class PlayerScript : MonoBehaviour {
 	public ParticleSystem ps;
 	public ParticleSystem electricPs;
 	private PlayerControl control;
-	private BlueprintScript blueprint;
 
 	public GameObject water;
-
+	public GameObject cube;
 
 	// Use this for initialization
 	void Start () {
@@ -30,11 +29,6 @@ public class PlayerScript : MonoBehaviour {
 
 		UpdateStats();
 		energy = maxEnergy;
-		ChangeBlueprint(GameObject.Find ("Blueprint").GetComponent<BlueprintScript>());
-	}
-
-	public void ChangeBlueprint(BlueprintScript blueprint) {
-		this.blueprint = blueprint;
 	}
 
 	public bool isDead() {
@@ -116,30 +110,43 @@ public class PlayerScript : MonoBehaviour {
 		RaycastHit hit;
 		bool hasHit = Physics.Raycast (ray, out hit, maxDistance: 5.0f);
 
+		BlueprintScript blueprint = inventory.GetBlueprint();
 
-		// if trying to place blueprint
-		if (inventory.IsBlueprintChosen () && !blueprint.isPlaced) {
-			// if not looking at anything, we don't show blueprint placement grid
-			if (!hasHit) {
+
+		// if nothing is hit, do nothing
+		if (!hasHit) {
+			if (inventory.IsBlueprintChosen ()) {
 				blueprint.gameObject.SetActive(false);
-				return;
 			}
+			cube.SetActive(false);
 
-			// show blueprint placement grid
-			Vector3 pos = GetBlockPosition(hit);
-			blueprint.MoveTo(pos);
-			blueprint.gameObject.SetActive(true);
-
-			// if trying to place blueprint
-			if (Input.GetMouseButton (1) || Input.GetMouseButton (0)) {
-				if (blueprint.TryPlace(pos)) {
-					inventory.ResetChosen();
-				}
-			}
 			return;
 		}
 
-		// Trying to mine
+		if(hasHit){
+			if(hit.distance < 2.5f && hit.collider.gameObject.tag == "Collectable"){
+				cube.SetActive(true);
+				cube.GetComponent<BuildingBlock>().SetMaterial(0);
+				cube.GetComponent<BuildingBlock>().SetHighlightPosition(hit.collider.gameObject);
+			}
+			else if(hit.collider.gameObject.tag == "Collectable" || hit.collider.gameObject.tag == "Buildable"){
+				cube.SetActive(true);
+				cube.GetComponent<BuildingBlock>().SetMaterial(inventory.GetChosenBlock());
+				cube.GetComponent<BuildingBlock>().SetBlockPosition(hit.collider.gameObject);
+			}
+		}
+
+		// if blueprint is equiped, highlight placement grid
+		if (inventory.IsBlueprintChosen ()) {
+			Vector3 pos = GetBlockPosition(hit);
+			blueprint.MoveTo(pos);
+			blueprint.gameObject.SetActive(true);
+		} else {
+			inventory.GetBlueprint().gameObject.SetActive(false);
+		}
+
+
+		// left click (mine)
 		if (Input.GetMouseButton (0) && canPerformAction()) {
 			if (hasHit) {
 				string tag = hit.collider.gameObject.tag;
@@ -176,22 +183,17 @@ public class PlayerScript : MonoBehaviour {
 			}
 		}
 		
-		// Trying to place block
-		if (Input.GetMouseButtonDown (1) && hasHit && !inventory.IsBlueprintChosen()) {
-			// Checks if the clicked object can be build upon
-			if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
-				// Checks if inventory have any of the chosen blocks left
-				if (inventory.RemoveBlock()) {
-					Vector3 blockPos = GetBlockPosition(hit);
-					byte chosen = inventory.GetChosenBlock();
-					GameObject.Find("Map").GetComponent<MapGenerator>().PlaceBlock(blockPos, chosen);
-					// update blueprint
-					if (blueprint != null && blueprint.Contains(blockPos)) {
-						blueprint.AddBlock(chosen, blockPos);
-					}
-				}
-			}
-		}
+		// right click
+//		if (Input.GetMouseButtonDown (1) && hasHit) {
+//			// Checks if the clicked object can be build upon
+//			if (hit.collider.gameObject.tag == "Buildable" || hit.collider.gameObject.tag == "Collectable") {
+//				// Checks if inventory have any of the chosen blocks left
+//				if (inventory.RemoveBlock()) {
+//					GameObject.Find("Map").GetComponent<MapGenerator>().PlaceBlock(GetBlockPosition(hit), inventory.GetChosen());
+//					
+//				}
+//			}
+//		}
 	}
 
 	public void CollectableBlock(BlockScript bs, Vector3 hitpoint){
@@ -202,35 +204,6 @@ public class PlayerScript : MonoBehaviour {
 		inventory.AddBlock(bs.type);
 		
 		GameObject.Find("Map").GetComponent<MapGenerator>().DestroyBlock(bs.gameObject);
-
-		// find position of quad
-		Vector3 pos = bs.gameObject.transform.position;
-		
-		switch (bs.gameObject.name) {
-		case "top": 
-			pos += new Vector3(0,-0.5f,0); break;
-			
-		case "bottom": 
-			pos += new Vector3(0,0.5f,0); break;
-			
-		case "left": 
-			pos += new Vector3(0.5f,0,0); break;
-			
-		case "right": 
-			pos += new Vector3(-0.5f,0,0); break;
-			
-		case "back": 
-			pos += new Vector3(0,0f,-0.5f); break;
-			
-		case "front": 
-			pos += new Vector3(0,0f,0.5f); break;
-			
-		default:
-			break;
-		}
-		if (blueprint != null && blueprint.Contains (pos)) {
-			blueprint.RemoveBlock(pos);
-		}
 	}
 
 	public void RechargableBlock(Vector3 hitpoint){
