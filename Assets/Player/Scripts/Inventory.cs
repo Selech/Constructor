@@ -14,7 +14,6 @@ public class Inventory : MonoBehaviour {
 	private GameObject stone;
 	private GameObject dirt;
 	private GameObject wood;
-	public GameObject blueprint;
 	private byte chosen;
 	
 	// Use this for initialization
@@ -32,6 +31,7 @@ public class Inventory : MonoBehaviour {
 	void Update () {
 
 		if (Input.GetKeyDown (KeyCode.Alpha0)) {
+			// zero is used for blueprint
 			chosen = 0;
 			UIMarker.rectTransform.localPosition = new Vector3(-300,50,0);
 		}
@@ -66,12 +66,13 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
-	public BlueprintScript GetBlueprint() {
-		return blueprint.GetComponent<BlueprintScript>();
+	public bool IsBlueprintChosen() {
+		return chosen == 0;
 	}
 
-	public bool IsBlueprintChosen() {
-		return chosen == 0 && blueprint != null;
+	public void ResetChosen() {
+		chosen = BlockType.DIRT;
+		UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
 	}
 
 	public byte GetChosenBlock() {

@@ -6,12 +6,13 @@ using System;
 [RequireComponent (typeof(BoxCollider))]
 public class BlueprintScript : MonoBehaviour
 {
-	public GameObject quadPrefab;
 	public Material freeMat;
 	public Material blockedMat;
+	public Material floorMat;
+	public Material dirt, stone, wood;
 
 	// Data of all supposed block positions in the blueprint
-	private byte[,,] data;
+	public byte[,,] data;
 	// Lists of actual block positions
 	private byte[,,] blocks;
 	// local position at which the blueprint will be placed
@@ -20,11 +21,14 @@ public class BlueprintScript : MonoBehaviour
 	private Vector3 dimensions;
 	private bool IsPlacing;
 	private Vector3 oldPos;
+	public bool isPlaced;
+
 
 	void Awake ()
 	{
 		box = this.GetComponent<BoxCollider> ();
 		oldPos = this.transform.position;
+		isPlaced = false;
 	}
 
 	// should delete this
@@ -35,18 +39,18 @@ public class BlueprintScript : MonoBehaviour
 		int z = 2;
 		SetDimensions (new Vector3 (x, y, z), new Vector2 (1, 0));
 		data = new byte[x, y, z];
-		data [0, 0, 0] = 1;
-		data [1, 0, 0] = 1;
-		data [2, 0, 0] = 1;
-		data [0, 0, 1] = 1;
-		data [1, 0, 1] = 1;
-		data [2, 0, 1] = 1;
+		data [0, 0, 0] = 2;
+		data [1, 0, 0] = 0;
+		data [2, 0, 0] = 2;
+		data [0, 0, 1] = 2;
+		data [1, 0, 1] = 3;
+		data [2, 0, 1] = 2;
 	}
 
 	public void Update ()
 	{
 		// if the grid has changed position
-		if (PositionChanged ()) {
+		if (!isPlaced && PositionChanged ()) {
 			oldPos = this.transform.position;
 			UpdatePlacementGrid ();
 		}
@@ -73,23 +77,57 @@ public class BlueprintScript : MonoBehaviour
 		obj.transform.localScale = dim;
 	}
 
-	public void SetData (byte[,,] data)
+	public void AddBlock (byte type, Vector3 globalPos)
 	{
-		this.data = data;
+		int x = (int)(globalPos.x - transform.position.x);
+		int y = (int)(globalPos.y - transform.position.y);
+		int z = (int)(globalPos.z - transform.position.z);
+		blocks [x, y, z] = type;
+		if (IsFinished()) {
+			Clear();
+			Destroy(this.gameObject);
+		}
 	}
 
-	public void AddBlock (byte BlockType, Vector3 localPos)
-	{
-
+	private void Clear() {
+		MapGenerator generator = GameObject.Find ("Map").GetComponent<MapGenerator> ();
+		for (int x = 0; x < dimensions.x; x++) {
+			for (int y = 0; y < dimensions.y; y++) {
+				for (int z = 0; z < dimensions.z; z++) {
+					generator.DestroyBlock(this.transform.position + new Vector3(x, y, z));
+				}
+			}
+		}
 	}
 
-	public void RemoveBlock (byte BlockType, Vector3 localPos)
+	public bool IsFinished() {
+		for (int x = 0; x < dimensions.x; x++) {
+			for (int y = 0; y < dimensions.y; y++) {
+				for (int z = 0; z < dimensions.z; z++) {
+					if (data[x, y, z] != blocks[x, y, z]) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	public void RemoveBlock (Vector3 globalPos)
 	{
-		
+		int x = (int)(globalPos.x - transform.position.x);
+		int y = (int)(globalPos.y - transform.position.y);
+		int z = (int)(globalPos.z - transform.position.z);
+		blocks [x, y, z] = BlockType.EMPTY;
+		if (IsFinished()) {
+			Clear();
+			Destroy(this.gameObject);
+		}
 	}
 
 	public bool Contains (Vector3 globalPos)
 	{
+		print (globalPos);
 		return box.bounds.Contains (globalPos);
 	}
 
@@ -119,8 +157,19 @@ public class BlueprintScript : MonoBehaviour
 
 	public bool TryPlace (Vector3 pos)
 	{
+		print ("try place");
 		bool[,] arr;
-		return CalculatePlacementGrid (out arr);
+		// if can be placed
+		if (CalculatePlacementGrid (out arr)) {
+			print ("succesfully placed");
+			isPlaced = true;
+			foreach (Transform child in this.transform) {
+				Destroy (child.gameObject);
+			}
+			GenerateFloor ();
+			return true;
+		}
+		return false;
 	}
 
 	private bool CalculatePlacementGrid (out bool[,] arr)
@@ -130,7 +179,6 @@ public class BlueprintScript : MonoBehaviour
 		arr = new bool[w, d];
 		bool allFree = true;
 
-		// 63 22 64
 		for (int x = 0; x < w; x++) {
 			for (int z = 0; z < d; z++) {
 				Vector3 rayPos = this.transform.position + new Vector3 (x, 0f, z);
@@ -148,14 +196,56 @@ public class BlueprintScript : MonoBehaviour
 		}
 
 		return allFree;
-	} 
+	}
+
+	private void GenerateFloor ()
+	{
+		GameObject floor = new GameObject ("Floor");
+		floor.transform.parent = this.transform;
+		floor.transform.localPosition = new Vector3 (0, -0.5f, 0);
+
+		GameObject bottom = GameObject.CreatePrimitive (PrimitiveType.Cube);
+		bottom.AddComponent<Buildable> ();
+		bottom.tag = "Buildable";
+		bottom.transform.parent = floor.transform;
+		float border = 0.05f;
+		bottom.transform.localScale = new Vector3 (dimensions.x + 2 * border, 0.02f, dimensions.z + 2 * border);
+		bottom.transform.localPosition = new Vector3 ((dimensions.x - 1) / 2.0f, 0.01f, (dimensions.z - 1) / 2.0f);
+		bottom.GetComponent<MeshRenderer> ().material = floorMat;
+
+		for (int x = 0; x < (int)dimensions.x; x++) {
+			for (int z = 0; z < (int)dimensions.z; z++) {
+				if (data [x, 0, z] == BlockType.EMPTY)
+					continue;
+
+				GameObject quad = GameObject.CreatePrimitive (PrimitiveType.Quad);
+				quad.transform.parent = floor.transform;
+				quad.transform.rotation = Quaternion.Euler (90, 0, 0);
+				quad.transform.localPosition = new Vector3 (x, 0.022f, z);
+				Destroy (quad.GetComponent<MeshCollider> ());
+				switch (data [x, 0, z]) {
+				case BlockType.DIRT:
+					quad.GetComponent<MeshRenderer> ().material = dirt;
+					break;
+				case BlockType.STONE:
+					quad.GetComponent<MeshRenderer> ().material = stone;
+					break;
+				case BlockType.WOOD:
+					quad.GetComponent<MeshRenderer> ().material = wood;
+					break;
+				}
+			}
+		}
+	}
 
 	// place a quad indicating if the block underneath is blocked or free
 	private void CreateQuad (int x, int z, bool free)
 	{
-		GameObject quad = (GameObject)Instantiate (quadPrefab);
+		GameObject quad = GameObject.CreatePrimitive (PrimitiveType.Quad);
+		Destroy (quad.GetComponent<MeshCollider> ());
 		quad.transform.parent = this.transform;
 		quad.transform.localPosition = new Vector3 (x, -0.49f, z);
+		quad.transform.rotation = Quaternion.Euler (90f, 0, 0);
 		quad.GetComponent<MeshRenderer> ().material = free ? freeMat : blockedMat;
 	}
 }

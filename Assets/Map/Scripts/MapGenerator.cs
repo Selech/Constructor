@@ -2,7 +2,8 @@
 using System.Collections;
 
 [RequireComponent (typeof(MapElevator))]
-public class MapGenerator : MonoBehaviour {
+public class MapGenerator : MonoBehaviour
+{
 	// size of map
 	public Vector3 dimensions;
 	// seed for generation of the map
@@ -15,19 +16,20 @@ public class MapGenerator : MonoBehaviour {
 	public ParticleSystem electricParticles;
 	public PhysicMaterial quadPhysics;
 	public GameObject water;
-
 	private MapElevator elevator;
 	private GameObject container;
 	private byte[,,] mapData;
 	
 	// Use this for initialization
-	void Awake () {
+	void Awake ()
+	{
 		mapData = new byte[(int)dimensions.x, (int)dimensions.y, (int)dimensions.z];
 		container = new GameObject ("Blocks");
 		elevator = GetComponent<MapElevator> ();
 	}
 
-	public Vector3 GetRandomSpawnPoint() {
+	public Vector3 GetRandomSpawnPoint ()
+	{
 		int x = Random.Range (10, (int)dimensions.x - 10);
 		int z = Random.Range (10, (int)dimensions.z - 10);
 		int y = elevator.GetElevation (x, z) + 4;
@@ -36,45 +38,77 @@ public class MapGenerator : MonoBehaviour {
 	}
 
 	// generates the map
-	public void GenerateMap(){
+	public void GenerateMap ()
+	{
 		// generate elevation
-		elevator.GenerateElevation (seed+10);
+		elevator.GenerateElevation (seed + 10);
 		Random.seed = seed;
 
+		// generate ground
 		for (int x = 0; x < dimensions.x; x++) {
-			for(int z = 0; z < dimensions.z; z++){
+			for (int z = 0; z < dimensions.z; z++) {
 				// get the elevation of the coordinate
-				int e = elevator.GetElevation(x, z);
+				int e = elevator.GetElevation (x, z);
 
-				for(int y = 0; y < e; y++) {
+				for (int y = 0; y < e; y++) {
 					// Generates blocks
-					mapData[x, y, z] = PickBlock(x, y, z);
+					mapData [x, y, z] = PickBlock (x, y, z);
 				}
 			}
 		}
+
+		// generate trees
+		Random.seed = seed + 50;
+		int numOfTrees = 35;
+		for (int i = 0; i< numOfTrees; i++) {
+			int x = (int) (Random.value * (dimensions.x - 1));
+			int z = (int) (Random.value * (dimensions.z - 1));
+			GenerateTree(x, z);
+		}
+
+
 		CalculateQuads ();
+
+	}
+
+	private void GenerateTree (int x, int z)
+	{
+		// find lowest elevation point for tree
+		int ymin = elevator.GetElevation (x, z);
+		ymin = Mathf.Min (ymin, elevator.GetElevation (x + 1, z));
+		ymin = Mathf.Min (ymin, elevator.GetElevation (x, z + 1));
+		ymin = Mathf.Min (ymin, elevator.GetElevation (x + 1, z + 1));
+		int treeHeight = Random.Range (7, 10);
+
+		for (int i = 0; i < treeHeight; i++) {
+			mapData [x, ymin + i, z] = BlockType.WOOD;
+			mapData [x + 1, ymin + i, z] = BlockType.WOOD;
+			mapData [x, ymin + i, z + 1] = BlockType.WOOD;
+			mapData [x + 1, ymin + i, z + 1] = BlockType.WOOD;
+		}
 	}
 
 	// Generate a block based on the position
-	byte PickBlock(int x, int y, int z){
+	byte PickBlock (int x, int y, int z)
+	{
 		// bottom 4 layers are all stone
-		if(y < 4){
+		if (y < 4) {
 			return BlockType.STONE;
 		}
 		// 80 % chance of stone, 20 % dirt if layer is [5-10]
-		if(y < 10){
-			if(Random.value < 0.005f){
+		if (y < 10) {
+			if (Random.value < 0.005f) {
 				print ("elect");
 				return BlockType.ELECTRIC;
 			}
 			return Random.value < 0.1f ? BlockType.DIRT : BlockType.STONE;
 		}
 		// 50 % chance of stone, 50 % dirt if layer is [11-20]
-		if(y < 13){
+		if (y < 13) {
 			return Random.value < 0.4f ? BlockType.DIRT : BlockType.STONE;
 		}
 
-		if(y < 15){
+		if (y < 15) {
 			return Random.value < 0.7f ? BlockType.DIRT : BlockType.STONE;
 		}
 
@@ -83,20 +117,22 @@ public class MapGenerator : MonoBehaviour {
 	}
 
 	// Calculates surfaces of all blocks
-	void CalculateQuads() {
+	void CalculateQuads ()
+	{
 		for (int x = 0; x < dimensions.x; x++) {
-			for(int z = 0; z < dimensions.z; z++) {
-				for(int y = 0; y < dimensions.y; y++){
-					if(mapData[x,y,z] == BlockType.EMPTY){
+			for (int z = 0; z < dimensions.z; z++) {
+				for (int y = 0; y < dimensions.y; y++) {
+					if (mapData [x, y, z] == BlockType.EMPTY) {
 						break;
 					}
-					CalculateSurface(x, y, z);
+					CalculateSurface (x, y, z);
 				}
 			}
 		}
 	}
 	
-	private void CreateQuad(Vector3 pos, string face) {
+	private void CreateQuad (Vector3 pos, string face)
+	{
 		GameObject quad = GameObject.CreatePrimitive (PrimitiveType.Quad);
 
 		switch (face) {
@@ -156,9 +192,9 @@ public class MapGenerator : MonoBehaviour {
 		case BlockType.ELECTRIC:
 			bs.type = BlockType.ELECTRIC;
 			quad.GetComponent<MeshRenderer> ().material = electric;
-			GameObject ps = Instantiate(electricParticles.gameObject);
+			GameObject ps = Instantiate (electricParticles.gameObject);
 			ps.transform.position = quad.transform.position;
-			ps.transform.SetParent(quad.transform);
+			ps.transform.SetParent (quad.transform);
 			break;
 		default:
 			Destroy (quad);
@@ -166,8 +202,9 @@ public class MapGenerator : MonoBehaviour {
 		}
 	}
 
-	void CalculateSurface(int x, int y, int z){
-		if(y < 0 || y >= dimensions.y || x < 0 || x >= dimensions.x || z < 0 || z >= dimensions.z){
+	void CalculateSurface (int x, int y, int z)
+	{
+		if (y < 0 || y >= dimensions.y || x < 0 || x >= dimensions.x || z < 0 || z >= dimensions.z) {
 			return;
 		}
 
@@ -180,79 +217,54 @@ public class MapGenerator : MonoBehaviour {
 
 		// check top
 		if (y < dimensions.y - 1 && mapData [x, y + 1, z] == BlockType.EMPTY) {
-			CreateQuad(pos, "top");
+			CreateQuad (pos, "top");
 		}
 		// check bottom
 		if (y > 0 && mapData [x, y - 1, z] == BlockType.EMPTY) {
-			CreateQuad(pos, "bottom");
+			CreateQuad (pos, "bottom");
 		}
 		// check left
 		if (x > 0 && mapData [x - 1, y, z] == BlockType.EMPTY) {
-			CreateQuad(pos, "left");
+			CreateQuad (pos, "left");
 		}
 		// check right
 		if (x < dimensions.x - 1 && mapData [x + 1, y, z] == BlockType.EMPTY) {
-			CreateQuad(pos, "right");
+			CreateQuad (pos, "right");
 		}
 		// check front
 		if (z < dimensions.z - 1 && mapData [x, y, z + 1] == BlockType.EMPTY) {
-			CreateQuad(pos, "back");
+			CreateQuad (pos, "back");
 		}
 		// check back
 		if (z > 0 && mapData [x, y, z - 1] == BlockType.EMPTY) {
-			CreateQuad(pos, "front");
+			CreateQuad (pos, "front");
 		}
 	}
 
-	public void PlaceBlock(Vector3 pos, byte type) {
+	public void PlaceBlock (Vector3 pos, byte type)
+	{
 		int x = (int)pos.x;
 		int y = (int)pos.y;
 		int z = (int)pos.z;
 
-		mapData[x, y, z] = type;
+		mapData [x, y, z] = type;
 		CalculateSurface (x, y, z);
-		CalculateSurface (x-1, y, z);
-		CalculateSurface (x+1, y, z);
-		CalculateSurface (x, y-1, z);
-		CalculateSurface (x, y+1, z);
-		CalculateSurface (x, y, z-1);
-		CalculateSurface (x, y, z+1);
-
+		CalculateSurface (x - 1, y, z);
+		CalculateSurface (x + 1, y, z);
+		CalculateSurface (x, y - 1, z);
+		CalculateSurface (x, y + 1, z);
+		CalculateSurface (x, y, z - 1);
+		CalculateSurface (x, y, z + 1);
 	}
 
-	public void DestroyBlock(GameObject quad){
-		// find position of the block of this quad
-		Vector3 pos = quad.transform.position;
-
-		switch (quad.name) {
-		case "top": 
-			pos += new Vector3(0,-0.5f,0); break;
-
-		case "bottom": 
-			pos += new Vector3(0,0.5f,0); break;
-
-		case "left": 
-			pos += new Vector3(0.5f,0,0); break;
-
-		case "right": 
-			pos += new Vector3(-0.5f,0,0); break;
-
-		case "back": 
-			pos += new Vector3(0,0f,-0.5f); break;
-
-		case "front": 
-			pos += new Vector3(0,0f,0.5f); break;
-
-		default:
-			break;
-		}
+	public void DestroyBlock(Vector3 pos) {
 		// destroy the block
-		DestroySurface(pos);
+		DestroySurface (pos);
 		int x = (int)pos.x;
 		int y = (int)pos.y;
 		int z = (int)pos.z;
-		mapData[(int)pos.x, (int)pos.y, (int)pos.z] = BlockType.EMPTY;
-
+		mapData [(int)pos.x, (int)pos.y, (int)pos.z] = BlockType.EMPTY;
+		
 		// calculate surface of the neightbors
 		// top
 		CalculateSurface (x, y + 1, z);
@@ -268,48 +280,85 @@ public class MapGenerator : MonoBehaviour {
 		CalculateSurface (x, y, z - 1);
 	}
 
-	private void DestroySurface(Vector3 pos){
+	public void DestroyBlock (GameObject quad)
+	{
+		// find position of the block of this quad
+		Vector3 pos = quad.transform.position;
+
+		switch (quad.name) {
+		case "top": 
+			pos += new Vector3 (0, -0.5f, 0);
+			break;
+
+		case "bottom": 
+			pos += new Vector3 (0, 0.5f, 0);
+			break;
+
+		case "left": 
+			pos += new Vector3 (0.5f, 0, 0);
+			break;
+
+		case "right": 
+			pos += new Vector3 (-0.5f, 0, 0);
+			break;
+
+		case "back": 
+			pos += new Vector3 (0, 0f, -0.5f);
+			break;
+
+		case "front": 
+			pos += new Vector3 (0, 0f, 0.5f);
+			break;
+
+		default:
+			break;
+		}
+		DestroyBlock (pos);
+	}
+
+	private void DestroySurface (Vector3 pos)
+	{
 		Ray ray = new Ray (pos, Vector3.up);
 		RaycastHit hit;
 		// top
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
-			if(hit.collider.tag == "Collectable"){
-				Destroy(hit.collider.gameObject);
+			if (hit.collider.tag == "Collectable") {
+				Destroy (hit.collider.gameObject);
 			}
 		}
 		// right
 		ray.direction = Vector3.right;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
-			if(hit.collider.tag == "Collectable"){
-				Destroy(hit.collider.gameObject);
+			if (hit.collider.tag == "Collectable") {
+				Destroy (hit.collider.gameObject);
 			}
 		}
 		// bottom
 		ray.direction = Vector3.down;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
-			if(hit.collider.tag == "Collectable"){
-				Destroy(hit.collider.gameObject);
+			if (hit.collider.tag == "Collectable") {
+				Destroy (hit.collider.gameObject);
 			}
 		}
 		// left
 		ray.direction = Vector3.left;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
-			if(hit.collider.tag == "Collectable"){
-				Destroy(hit.collider.gameObject);
+			if (hit.collider.tag == "Collectable") {
+				Destroy (hit.collider.gameObject);
 			}
 		}
 		// front
 		ray.direction = Vector3.forward;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
-			if(hit.collider.tag == "Collectable"){
-				Destroy(hit.collider.gameObject);
+			if (hit.collider.tag == "Collectable") {
+				Destroy (hit.collider.gameObject);
 			}
 		}
 		// back
 		ray.direction = Vector3.back;
 		if (Physics.Raycast (ray, out hit, maxDistance: 0.5f)) {
-			if(hit.collider.tag == "Collectable"){
-				Destroy(hit.collider.gameObject);
+			if (hit.collider.tag == "Collectable") {
+				Destroy (hit.collider.gameObject);
 			}
 		}
 	}

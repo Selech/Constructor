@@ -55,10 +55,11 @@ public class DesignerScript : MonoBehaviour {
 			}
 		}
 
-		DataLoader.SaveBlueprint (this.gameObject.name, w, h, d, ax, az, data);
+		DataLoader.SaveBlueprint (fileName, w, h, d, ax, az, data);
 	}
 	
 	private void Load() {
+		BlueprintScript bp = DataLoader.LoadBlueprint (fileName);
 
 	}
 
