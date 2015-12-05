@@ -38,7 +38,7 @@ public class MenuController : MonoBehaviour {
 	}
 
 	public void Deploy(string planet) {
-		Application.LoadLevel("Test");
+		Application.LoadLevel("Dirtus");
 	}
 
 	public void BackToOverview(){

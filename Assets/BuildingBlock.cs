@@ -18,6 +18,7 @@ public class BuildingBlock : MonoBehaviour {
 	}
 
 	public void SetHighlightPosition(GameObject quad){
+		this.transform.localScale = new Vector3(1.01f,1.01f,1.01f);
 		Vector3 pos = quad.transform.position;
 
 		switch (quad.name) {
@@ -47,33 +48,10 @@ public class BuildingBlock : MonoBehaviour {
 		this.transform.position = pos;
 	}
 
-	public void SetBlockPosition(GameObject quad){
-		Vector3 pos = quad.transform.position;
-		
-		switch (quad.name) {
-		case "top": 
-			pos += new Vector3(0,0.5f,0); break;
-			
-		case "bottom": 
-			pos += new Vector3(0,-0.5f,0); break;
-			
-		case "left": 
-			pos += new Vector3(-0.5f,0,0); break;
-			
-		case "right": 
-			pos += new Vector3(0.5f,0,0); break;
-			
-		case "back": 
-			pos += new Vector3(0,0f,0.5f); break;
-			
-		case "front": 
-			pos += new Vector3(0,0f,+0.5f); break;
-			
-		default:
-			break;
-		}
-
+	public void SetBlockPosition(Vector3 pos){
+		this.transform.localScale = new Vector3(1f,1f,1f);
 		this.transform.rotation = new Quaternion ();
 		this.transform.position = pos;
+
 	}
 }

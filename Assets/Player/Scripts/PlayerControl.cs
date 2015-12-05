@@ -88,6 +88,7 @@ public class PlayerControl: MonoBehaviour
 		}
 		// jump
 		if (Input.GetKey(KeyCode.Space) && IsGrounded()) {
+			SoundSystem.PlaySound("Jet");
 			rb.AddForce(this.transform.up * jumpForce, ForceMode.VelocityChange);
 		}
 

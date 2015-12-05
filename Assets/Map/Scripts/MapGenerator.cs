@@ -98,7 +98,6 @@ public class MapGenerator : MonoBehaviour
 		// 80 % chance of stone, 20 % dirt if layer is [5-10]
 		if (y < 10) {
 			if (Random.value < 0.005f) {
-				print ("elect");
 				return BlockType.ELECTRIC;
 			}
 			return Random.value < 0.1f ? BlockType.DIRT : BlockType.STONE;
@@ -243,6 +242,8 @@ public class MapGenerator : MonoBehaviour
 
 	public void PlaceBlock (Vector3 pos, byte type)
 	{
+		SoundSystem.PlaySound ("Place");
+
 		int x = (int)pos.x;
 		int y = (int)pos.y;
 		int z = (int)pos.z;
@@ -258,6 +259,8 @@ public class MapGenerator : MonoBehaviour
 	}
 
 	public void DestroyBlock(Vector3 pos) {
+		SoundSystem.PlaySound ("Chop");
+
 		// destroy the block
 		DestroySurface (pos);
 		int x = (int)pos.x;

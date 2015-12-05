@@ -94,7 +94,9 @@ public class BlueprintScript : MonoBehaviour
 		for (int x = 0; x < dimensions.x; x++) {
 			for (int y = 0; y < dimensions.y; y++) {
 				for (int z = 0; z < dimensions.z; z++) {
-					generator.DestroyBlock(this.transform.position + new Vector3(x, y, z));
+					Vector3 pos = (this.transform.position + new Vector3(x, y, z));
+					print ("Removes " + pos);
+					generator.DestroyBlock(pos);
 				}
 			}
 		}
@@ -110,6 +112,8 @@ public class BlueprintScript : MonoBehaviour
 				}
 			}
 		}
+
+		GameObject.Find ("Player").GetComponent<PlayerScript> ().GiveMoney (10);
 		return true;
 	}
 
@@ -121,7 +125,7 @@ public class BlueprintScript : MonoBehaviour
 		blocks [x, y, z] = BlockType.EMPTY;
 		if (IsFinished()) {
 			Clear();
-			Destroy(this.gameObject);
+			//Destroy(this.gameObject);
 		}
 	}
 
@@ -167,6 +171,9 @@ public class BlueprintScript : MonoBehaviour
 				Destroy (child.gameObject);
 			}
 			GenerateFloor ();
+
+			GameObject.Find("Game Manager").GetComponent<UIManager>().HUD.SetActive(true);
+
 			return true;
 		}
 		return false;

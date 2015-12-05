@@ -9,6 +9,7 @@ public class Inventory : MonoBehaviour {
 	public Text AmountOfDirt;
 	public Text AmountOfStone;
 	public Text AmountOfWood;
+	public Text Money;
 	public Image UIMarker;
 	
 	private GameObject stone;
@@ -21,21 +22,15 @@ public class Inventory : MonoBehaviour {
 		chosen = 1;
 		UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
 		collected = new Dictionary<byte, int> ();
+		collected[0] = 0;
 		collected[1] = 0;
 		collected[2] = 0;
 		collected[3] = 0;
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
-		if (Input.GetKeyDown (KeyCode.Alpha0)) {
-			// zero is used for blueprint
-			chosen = 0;
-			UIMarker.rectTransform.localPosition = new Vector3(-300,50,0);
-		}
-		else if (Input.GetKeyDown (KeyCode.Alpha1)) {
+		if (Input.GetKeyDown (KeyCode.Alpha1)) {
 			chosen = BlockType.DIRT;
 			UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
 		}
@@ -66,6 +61,11 @@ public class Inventory : MonoBehaviour {
 		}
 	}
 
+	public void GiveMoney(int earned){
+		collected [0] += earned;
+		UpdateBlockText ();
+	}
+
 	public bool IsBlueprintChosen() {
 		return chosen == 0;
 	}
@@ -80,6 +80,7 @@ public class Inventory : MonoBehaviour {
 	}
 
 	private void UpdateBlockText(){
+		Money.text = collected [0] + "";
 		AmountOfDirt.text = collected[1] + "";
 		AmountOfStone.text = collected[2] + "";
 		AmountOfWood.text = collected[3] + "";

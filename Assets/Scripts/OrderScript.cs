@@ -21,7 +21,13 @@ public class OrderScript : MonoBehaviour {
 	}
 	
 	public void LoadBlueprint(){
-		print ("Should load blueprint");
+		TakeOrder.interactable = false;
+		DiscardOrder.interactable = false;
+
+		GameObject player = GameObject.Find ("Player");
+		player.GetComponent<PlayerScript> ().blueprintSelected = true;
+
+		GameObject.Find ("Game Manager").GetComponent<GameManager>().Unpause();
 	}
 	
 	public void SendBlueprint(){
