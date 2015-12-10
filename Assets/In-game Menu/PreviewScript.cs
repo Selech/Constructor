@@ -3,7 +3,11 @@ using System.Collections;
 
 public class PreviewScript : MonoBehaviour {
 
-	public GameObject model;
+	public GameObject SpaceshipPart;
+	public GameObject SmallOvenModel;
+	public GameObject Bonfire;
+
+	private GameObject model;
 
 	// Use this for initialization
 	void Start () {
@@ -41,5 +45,28 @@ public class PreviewScript : MonoBehaviour {
 		if (Input.GetKey(KeyCode.Minus)) {
 			model.transform.localScale -= new Vector3(1f,1f,1f);;
 		}
+	}
+
+	public void SelectModel(int i){
+		SpaceshipPart.SetActive (false);
+		SmallOvenModel.SetActive (false);
+		Bonfire.SetActive (false);
+
+		switch(i){
+		case 0:
+			model = SpaceshipPart;
+			SpaceshipPart.SetActive (true);
+			break;
+		case 1: 
+			model = SmallOvenModel;
+			SmallOvenModel.SetActive (true);
+			break;
+		case 2:
+			model = Bonfire;
+			Bonfire.SetActive (true);
+			break;
+		}
+
+		model.transform.rotation = new Quaternion ();
 	}
 }

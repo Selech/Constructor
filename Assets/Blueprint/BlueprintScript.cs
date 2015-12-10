@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -23,28 +24,20 @@ public class BlueprintScript : MonoBehaviour
 	private Vector3 oldPos;
 	public bool isPlaced;
 
+	public Button preview;
 
 	void Awake ()
 	{
 		box = this.GetComponent<BoxCollider> ();
 		oldPos = this.transform.position;
 		isPlaced = false;
+		preview.interactable = false;
 	}
 
 	// should delete this
 	void Start ()
 	{
-		int x = 3;
-		int y = 1;
-		int z = 2;
-		SetDimensions (new Vector3 (x, y, z), new Vector2 (1, 0));
-		data = new byte[x, y, z];
-		data [0, 0, 0] = 2;
-		data [1, 0, 0] = 0;
-		data [2, 0, 0] = 2;
-		data [0, 0, 1] = 2;
-		data [1, 0, 1] = 3;
-		data [2, 0, 1] = 2;
+		
 	}
 
 	public void Update ()
@@ -54,6 +47,11 @@ public class BlueprintScript : MonoBehaviour
 			oldPos = this.transform.position;
 			UpdatePlacementGrid ();
 		}
+	}
+
+	public void SelectOrder(byte[,,] data, Vector3 size){
+		SetDimensions (size, new Vector2 (1, 0));
+		this.data = data;
 	}
 
 	private bool PositionChanged ()
@@ -112,7 +110,7 @@ public class BlueprintScript : MonoBehaviour
 				}
 			}
 		}
-
+		preview.interactable = false;
 		GameObject.Find ("Player").GetComponent<PlayerScript> ().GiveMoney (10);
 		return true;
 	}
@@ -172,6 +170,7 @@ public class BlueprintScript : MonoBehaviour
 			}
 			GenerateFloor ();
 
+			preview.interactable = true;
 			GameObject.Find("Game Manager").GetComponent<UIManager>().HUD.SetActive(true);
 
 			return true;

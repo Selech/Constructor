@@ -32,6 +32,10 @@ public class UIManager : MonoBehaviour
 
 	}
 
+	public void PlacedBlueprint(){
+		
+	}
+
 	public void SetEnergy (float val)
 	{
 		energyBar.value = val;
