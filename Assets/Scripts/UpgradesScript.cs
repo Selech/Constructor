@@ -22,7 +22,7 @@ public class UpgradesScript : MonoBehaviour {
 			PlayerPrefs.SetFloat("MaxEnergy", 100);
 			PlayerPrefs.SetFloat("Range", 3.0f);
 			PlayerPrefs.SetFloat("JumpJets", 6f);
-			PlayerPrefs.SetFloat("MiningSpeed", 2);
+			PlayerPrefs.SetFloat("MiningSpeed", 2f);
 
 			PlayerPrefs.SetInt("Money", 0);
 		}
@@ -33,7 +33,7 @@ public class UpgradesScript : MonoBehaviour {
 			PlayerPrefs.SetFloat("MaxEnergy", 100);
 			PlayerPrefs.SetFloat("Range", 3.0f);
 			PlayerPrefs.SetFloat("JumpJets", 6f);
-			PlayerPrefs.SetFloat("MiningSpeed", 2);
+			PlayerPrefs.SetFloat("MiningSpeed", 2f);
 
 			PlayerPrefs.SetInt("Money", 0);
 		}
@@ -42,7 +42,7 @@ public class UpgradesScript : MonoBehaviour {
 			PlayerPrefs.SetFloat("MaxEnergy", 100);
 			PlayerPrefs.SetFloat("Range", 3.0f);
 			PlayerPrefs.SetFloat("JumpJets", 6f);
-			PlayerPrefs.SetFloat("MiningSpeed", 2);
+			PlayerPrefs.SetFloat("MiningSpeed", 2f);
 			
 			PlayerPrefs.SetInt("Money", 0);
 		}

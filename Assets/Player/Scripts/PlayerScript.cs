@@ -6,7 +6,6 @@ using UnityEngine.UI;
 [RequireComponent (typeof (PlayerControl))]
 public class PlayerScript : MonoBehaviour {
 	private float miningSpeed;
-	public float miningPower;
 	private Inventory inventory;
 	private DateTime lastAction;
 	private float energy;
