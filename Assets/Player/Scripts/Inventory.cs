@@ -20,7 +20,7 @@ public class Inventory : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		chosen = 1;
-		UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
+		UIMarker.rectTransform.localPosition = new Vector3(-150,50,0);
 		collected = new Dictionary<byte, int> ();
 		collected[0] = 0;
 		collected[1] = 0;
@@ -32,15 +32,15 @@ public class Inventory : MonoBehaviour {
 	void Update () {
 		if (Input.GetKeyDown (KeyCode.Alpha1)) {
 			chosen = BlockType.DIRT;
-			UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
+			UIMarker.rectTransform.localPosition = new Vector3(-150,50,0);
 		}
 		else if (Input.GetKeyDown (KeyCode.Alpha2)) {
 			chosen = BlockType.STONE;
-			UIMarker.rectTransform.localPosition = new Vector3(-95,50,0);
+			UIMarker.rectTransform.localPosition = new Vector3(0,50,0);
 		}
 		else if (Input.GetKeyDown (KeyCode.Alpha3)) {
 			chosen = BlockType.WOOD;
-			UIMarker.rectTransform.localPosition = new Vector3(0,50,0);
+			UIMarker.rectTransform.localPosition = new Vector3(150,50,0);
 		}
 	}
 	
