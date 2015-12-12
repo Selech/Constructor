@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 [RequireComponent (typeof (PlayerControl))]
 public class PlayerScript : MonoBehaviour {
-	public float miningSpeed;
+	private float miningSpeed;
 	public float miningPower;
 	private Inventory inventory;
 	private DateTime lastAction;
@@ -80,7 +80,7 @@ public class PlayerScript : MonoBehaviour {
 				}
 			}
 			else if (hit.collider.tag == "DirtuCloud") {
-				if(hit.distance < 10f){
+				if(hit.distance < 18f){
 					energy -= 1f;
 				}
 			}
@@ -123,6 +123,7 @@ public class PlayerScript : MonoBehaviour {
 		maxEnergy = UpgradesScript.GetBattery ();
 		control.SetJumpForce (UpgradesScript.GetJumpJets());
 		range = UpgradesScript.GetRange ();
+		miningSpeed = UpgradesScript.GetMiningSpeed ();
 	}
 
 	private bool canPerformAction() {
@@ -179,7 +180,7 @@ public class PlayerScript : MonoBehaviour {
 		if (Input.GetMouseButton (0) && canPerformAction()) {
 			if (hasHit) {
 				string tag = hit.collider.gameObject.tag;
-				if (tag == "Collectable") {
+				if (tag == "Collectable" && canPerformAction() ) {
 					BlockScript bs = hit.collider.gameObject.GetComponent<BlockScript>();
 					
 					switch(bs.type){
