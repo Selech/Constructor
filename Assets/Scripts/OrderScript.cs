@@ -6,39 +6,30 @@ public class OrderScript : MonoBehaviour {
 	
 	private string ordername;
 	public Button TakeOrder;
-	public Button DeliverOrder;
-	public Button DiscardOrder;
 	public Text SelectedOrder;
 
 	public BlueprintScript bs;
 	public PreviewScript ps;
 	
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-	
 	public void LoadBlueprint(){
 		TakeOrder.interactable = false;
-		DiscardOrder.interactable = false;
 
 		GameObject player = GameObject.Find ("Player");
 		player.GetComponent<PlayerScript> ().blueprintSelected = true;
 
+		switch(this.ordername){
+		case "SpaceshipPart":
+			GameObject.Find ("SpaceshipPart").SetActive (false);
+			break;
+		case "SmallOven":
+			GameObject.Find ("SmallOven").SetActive (false);
+			break;
+		case "Bonfire":
+			GameObject.Find ("Bonfire").SetActive (false);
+			break;
+		}
+
 		GameObject.Find ("Game Manager").GetComponent<GameManager>().Unpause();
-	}
-	
-	public void SendBlueprint(){
-		
-	}
-	
-	public void DiscardBlueprint(){
-		
 	}
 	
 	public void SelectOrder(string ordername){

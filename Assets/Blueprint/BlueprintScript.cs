@@ -11,6 +11,7 @@ public class BlueprintScript : MonoBehaviour
 	public Material blockedMat;
 	public Material floorMat;
 	public Material dirt, stone, wood;
+	public Button SelectOrderBtn;
 
 	// Data of all supposed block positions in the blueprint
 	public byte[,,] data;
@@ -23,6 +24,8 @@ public class BlueprintScript : MonoBehaviour
 	private bool IsPlacing;
 	private Vector3 oldPos;
 	public bool isPlaced;
+
+	private GameObject floor;
 
 	public Button preview;
 
@@ -50,6 +53,9 @@ public class BlueprintScript : MonoBehaviour
 	}
 
 	public void SelectOrder(byte[,,] data, Vector3 size){
+		isPlaced = false;
+		IsPlacing = true;
+
 		SetDimensions (size, new Vector2 (1, 0));
 		this.data = data;
 	}
@@ -82,8 +88,8 @@ public class BlueprintScript : MonoBehaviour
 		int z = (int)(globalPos.z - transform.position.z);
 		blocks [x, y, z] = type;
 		if (IsFinished()) {
+			Destroy(floor);
 			Clear();
-			Destroy(this.gameObject);
 		}
 	}
 
@@ -92,9 +98,13 @@ public class BlueprintScript : MonoBehaviour
 		for (int x = 0; x < dimensions.x; x++) {
 			for (int y = 0; y < dimensions.y; y++) {
 				for (int z = 0; z < dimensions.z; z++) {
-					Vector3 pos = (this.transform.position + new Vector3(x, y, z));
-					print ("Removes " + pos);
-					generator.DestroyBlock(pos);
+					Vector3 pos = (this.transform.position + new Vector3 (x, y, z));
+					if (y == 0) {
+						generator.DestroyBlueprintBlock (pos, true);
+					} else {
+						generator.DestroyBlueprintBlock (pos, false);
+				
+					}
 				}
 			}
 		}
@@ -111,7 +121,9 @@ public class BlueprintScript : MonoBehaviour
 			}
 		}
 		preview.interactable = false;
-		GameObject.Find ("Player").GetComponent<PlayerScript> ().GiveMoney (10);
+		GameObject.Find ("Player").GetComponent<PlayerScript> ().GiveMoney (25);
+		SoundSystem.PlaySound ("Cash-in");
+		SelectOrderBtn.interactable = true;
 		return true;
 	}
 
@@ -122,14 +134,13 @@ public class BlueprintScript : MonoBehaviour
 		int z = (int)(globalPos.z - transform.position.z);
 		blocks [x, y, z] = BlockType.EMPTY;
 		if (IsFinished()) {
+			Destroy(floor);
 			Clear();
-			//Destroy(this.gameObject);
 		}
 	}
 
 	public bool Contains (Vector3 globalPos)
 	{
-		print (globalPos);
 		return box.bounds.Contains (globalPos);
 	}
 
@@ -159,11 +170,9 @@ public class BlueprintScript : MonoBehaviour
 
 	public bool TryPlace (Vector3 pos)
 	{
-		print ("try place");
 		bool[,] arr;
 		// if can be placed
 		if (CalculatePlacementGrid (out arr)) {
-			print ("succesfully placed");
 			isPlaced = true;
 			foreach (Transform child in this.transform) {
 				Destroy (child.gameObject);
@@ -206,7 +215,7 @@ public class BlueprintScript : MonoBehaviour
 
 	private void GenerateFloor ()
 	{
-		GameObject floor = new GameObject ("Floor");
+		floor = new GameObject ("Floor");
 		floor.transform.parent = this.transform;
 		floor.transform.localPosition = new Vector3 (0, -0.5f, 0);
 

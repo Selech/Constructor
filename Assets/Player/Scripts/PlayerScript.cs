@@ -48,7 +48,7 @@ public class PlayerScript : MonoBehaviour {
 	}
 
 	public bool isDead() {
-		if (energy <= 30 && energy > 0) {
+		if (energy <= 20 && energy >= 0) {
 			danger.enabled = true;
 		} else {
 			danger.enabled = false;

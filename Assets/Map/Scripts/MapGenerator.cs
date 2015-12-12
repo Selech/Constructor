@@ -258,6 +258,20 @@ public class MapGenerator : MonoBehaviour
 		CalculateSurface (x, y, z + 1);
 	}
 
+	public void DestroyBlueprintBlock(Vector3 pos, bool bottom) {
+		// destroy the block
+		DestroySurface (pos);
+		int x = (int)pos.x;
+		int y = (int)pos.y;
+		int z = (int)pos.z;
+		mapData [(int)pos.x, (int)pos.y, (int)pos.z] = BlockType.EMPTY;
+
+		if(bottom){
+			CalculateSurface (x, y - 1, z);
+
+		}
+	}
+
 	public void DestroyBlock(Vector3 pos) {
 		SoundSystem.PlaySound ("Chop");
 
@@ -314,6 +328,7 @@ public class MapGenerator : MonoBehaviour
 			break;
 
 		default:
+			print ("PROBLEM");
 			break;
 		}
 		DestroyBlock (pos);

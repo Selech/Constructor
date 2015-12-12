@@ -59,7 +59,7 @@ public class DesignerScript : MonoBehaviour {
 	}
 	
 	private void Load() {
-		BlueprintScript bp = DataLoader.LoadBlueprint (fileName);
+		DataLoader.LoadBlueprint (fileName);
 
 	}
 

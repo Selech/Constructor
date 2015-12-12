@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -11,6 +12,10 @@ public class UIManager : MonoBehaviour
 	public GameObject pauseMenu;
 	public GameObject deathMenu;
 	public Slider energyBar;
+	public Text charging;
+	public Text discharging;
+	private float lastEnergy;
+
 
 	// Use this for initialization
 	void Start ()
@@ -32,12 +37,17 @@ public class UIManager : MonoBehaviour
 
 	}
 
-	public void PlacedBlueprint(){
-		
-	}
-
 	public void SetEnergy (float val)
 	{
+		if(lastEnergy > val){
+			charging.gameObject.SetActive(false);
+			discharging.gameObject.SetActive(true);
+		}
+		else{
+			charging.gameObject.SetActive(true);
+			discharging.gameObject.SetActive(false);
+		}
+		lastEnergy = val;
 		energyBar.value = val;
 	}
 
@@ -49,11 +59,11 @@ public class UIManager : MonoBehaviour
 
 	public void Restart(){
 		pauseMenu.SetActive (false);
-		Application.LoadLevel (Application.loadedLevel);
+		SceneManager.LoadScene (SceneManager.GetActiveScene ().name);
 	}
 	
 	public void ReturnToShip(){
 		pauseMenu.SetActive (false);
-		Application.LoadLevel ("Menu");
+		SceneManager.LoadScene ("Menu");
 	}
 }

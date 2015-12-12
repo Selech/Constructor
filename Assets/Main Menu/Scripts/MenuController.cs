@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class MenuController : MonoBehaviour {
@@ -7,16 +8,6 @@ public class MenuController : MonoBehaviour {
 	public GameObject PlantusCanvas;
 	public GameObject MystosCanvas;
 	public GameObject IsosCanvas;
-
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
 	public void OpenPlanetCanvas(string state){
 		switch (state) {
@@ -38,7 +29,7 @@ public class MenuController : MonoBehaviour {
 	}
 
 	public void Deploy(string planet) {
-		Application.LoadLevel("Dirtus");
+		SceneManager.LoadScene("Dirtus");
 	}
 
 	public void BackToOverview(){
