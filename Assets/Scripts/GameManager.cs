@@ -36,14 +36,17 @@ public class GameManager : MonoBehaviour {
 	}
 
 	public void Pause() {
+		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
 		control.enabled = false;
 		player.enabled = false;
 	}
 
 	public void Unpause() {
+		Cursor.lockState = CursorLockMode.Confined;
 		Cursor.visible = false;
 		control.enabled = true;
 		player.enabled = true;
+		player.UpdateStats ();
 	}
 }

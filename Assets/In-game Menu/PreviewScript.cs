@@ -10,29 +10,29 @@ public class PreviewScript : MonoBehaviour {
 	private GameObject model;
 
 	// Use this for initialization
-	void Start () {
-	
+	void OnEnable () {
+		model.transform.rotation = new Quaternion ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		// up
-		if (Input.GetKey(KeyCode.UpArrow)) {
+		if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) {
 			model.transform.Rotate(new Vector3(2f,0,0));
 		}
 
 		// down
-		if (Input.GetKey(KeyCode.DownArrow)) {
+		if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) {
 			model.transform.Rotate(new Vector3(-2f,0,0));
 		}
 
 		// left
-		if (Input.GetKey(KeyCode.LeftArrow)) {
+		if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) {
 			model.transform.Rotate(new Vector3(0f,2f,0));
 		}
 
 		// right
-		if (Input.GetKey(KeyCode.RightArrow)) {
+		if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) {
 			model.transform.Rotate(new Vector3(0f,-2f,0));
 		}
 

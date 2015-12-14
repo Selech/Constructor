@@ -63,6 +63,7 @@ public class Inventory : MonoBehaviour {
 
 	public void GiveMoney(int earned){
 		collected [0] += earned;
+		PlayerPrefs.SetInt("Money", PlayerPrefs.GetInt("Money") + earned);
 		UpdateBlockText ();
 	}
 
@@ -72,7 +73,7 @@ public class Inventory : MonoBehaviour {
 
 	public void ResetChosen() {
 		chosen = BlockType.DIRT;
-		UIMarker.rectTransform.localPosition = new Vector3(-190,50,0);
+		UIMarker.rectTransform.localPosition = new Vector3(-150,50,0);
 	}
 
 	public byte GetChosenBlock() {

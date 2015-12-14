@@ -8,7 +8,12 @@ public class MainMenuScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
+		PlayerPrefs.SetFloat("MaxEnergy", 100);
+		PlayerPrefs.SetFloat("Range", 3.0f);
+		PlayerPrefs.SetFloat("JumpJets", 6f);
+		PlayerPrefs.SetFloat("MiningSpeed", 2f);
+
+		PlayerPrefs.SetInt("Money", 0);
 	}
 	
 	// Update is called once per frame

@@ -47,7 +47,7 @@ public class PlayerScript : MonoBehaviour {
 	}
 
 	public bool isDead() {
-		if (energy <= 20 && energy >= 0) {
+		if (energy <= 40 && energy >= 0) {
 			danger.enabled = true;
 		} else {
 			danger.enabled = false;
@@ -80,7 +80,7 @@ public class PlayerScript : MonoBehaviour {
 			}
 			else if (hit.collider.tag == "DirtuCloud") {
 				if(hit.distance < 18f){
-					energy -= 1f;
+					energy -= 0.8f;
 				}
 			}
 			else {

@@ -28,12 +28,16 @@ public class DirtuCloud : MonoBehaviour {
 		}
 
 		target = new Vector3(target.x, this.transform.position.y, target.z);
-		this.transform.position = Vector3.MoveTowards(this.transform.position, target, 0.05f);
+
+		if(!GameObject.Find("Game Manager").GetComponent<GameManager>().IsPaused()){
+			this.transform.position = Vector3.MoveTowards(this.transform.position, target, 0.05f);
+		
+		}
 	}
 
 	void OnTriggerStay(Collider other){
 		if (other.tag == "Player") {
-			other.GetComponent<PlayerScript>().Damage(1f);
+			other.GetComponent<PlayerScript>().Damage(1f); 
 		}
 	}
 }

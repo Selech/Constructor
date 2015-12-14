@@ -29,23 +29,7 @@ public class UpgradesScript : MonoBehaviour {
 	}
 
 	private static void checker(){
-		if(true){
-			PlayerPrefs.SetFloat("MaxEnergy", 100);
-			PlayerPrefs.SetFloat("Range", 3.0f);
-			PlayerPrefs.SetFloat("JumpJets", 6f);
-			PlayerPrefs.SetFloat("MiningSpeed", 2f);
-
-			PlayerPrefs.SetInt("Money", 0);
-		}
-
-		if(PlayerPrefs.GetFloat ("MaxEnergy") == 0){
-			PlayerPrefs.SetFloat("MaxEnergy", 100);
-			PlayerPrefs.SetFloat("Range", 3.0f);
-			PlayerPrefs.SetFloat("JumpJets", 6f);
-			PlayerPrefs.SetFloat("MiningSpeed", 2f);
-			
-			PlayerPrefs.SetInt("Money", 0);
-		}
+		
 	}
 	
 	// Update is called once per frame
@@ -54,55 +38,57 @@ public class UpgradesScript : MonoBehaviour {
 	}
 
 	void OnEnable(){
-		range.text = "Upgrade range: " + (PlayerPrefs.GetFloat ("Range")) + ">" + (PlayerPrefs.GetFloat ("Range") + 1f);
-		energy.text = "Upgrade energy: " + (PlayerPrefs.GetFloat ("MaxEnergy")) + ">" + (PlayerPrefs.GetFloat ("MaxEnergy") + 20f);
-		jump.text = "Upgrade energy: " + (PlayerPrefs.GetFloat ("JumpJets")) + ">" + (PlayerPrefs.GetFloat ("JumpJets") + 3f);
-		speed.text = "Upgrade mine speed: " + (PlayerPrefs.GetFloat ("MiningSpeed")) + ">" + (PlayerPrefs.GetFloat ("MiningSpeed") + 1f);
+		range.text = "Upgrade range: " + (PlayerPrefs.GetFloat ("Range")) + ">" + (PlayerPrefs.GetFloat ("Range") + 2f);
+		energy.text = "Upgrade energy: " + (PlayerPrefs.GetFloat ("MaxEnergy")) + ">" + (PlayerPrefs.GetFloat ("MaxEnergy") + 30f);
+		jump.text = "Upgrade jump force: " + (PlayerPrefs.GetFloat ("JumpJets")) + ">" + (PlayerPrefs.GetFloat ("JumpJets") + 5f);
+		speed.text = "Upgrade mine speed: " + (PlayerPrefs.GetFloat ("MiningSpeed")) + ">" + (PlayerPrefs.GetFloat ("MiningSpeed") + 4f);
 
-		if(PlayerPrefs.GetInt("Money") > 20){
+		if (PlayerPrefs.GetInt ("Money") > 20) {
 			rangeButton.interactable = true;
 			energyButton.interactable = true;
 			jumpButton.interactable = true;
 			speedButton.interactable = true;
+		} else {
+			rangeButton.interactable = false;
+			energyButton.interactable = false;
+			jumpButton.interactable = false;
+			speedButton.interactable = false;
 		}
 	}
 
 	public void AddRange(){
-		PlayerPrefs.SetFloat("Range", PlayerPrefs.GetFloat ("Range") + 1f);
+		PlayerPrefs.SetFloat("Range", PlayerPrefs.GetFloat ("Range") + 2f);
+		GameObject.Find ("Player").GetComponent<Inventory> ().GiveMoney (-20);
 		OnEnable ();
 	}
 
 	public void AddBattery(){
-		PlayerPrefs.SetFloat("MaxEnergy", PlayerPrefs.GetFloat ("MaxEnergy") + 20f);
+		PlayerPrefs.SetFloat("MaxEnergy", PlayerPrefs.GetFloat ("MaxEnergy") + 30f);
+		GameObject.Find ("Player").GetComponent<Inventory> ().GiveMoney (-20);		
 		OnEnable ();
 	}
 
 	public void AddJumpJets(){
-		PlayerPrefs.SetFloat("JumpJets", PlayerPrefs.GetFloat ("JumpJets") + 3f);
+		PlayerPrefs.SetFloat("JumpJets", PlayerPrefs.GetFloat ("JumpJets") + 5f);
+		GameObject.Find ("Player").GetComponent<Inventory> ().GiveMoney (-20);		
 		OnEnable ();
 	}
 
 	public void AddMiningSpeed(){
-		PlayerPrefs.SetFloat("MiningSpeed", PlayerPrefs.GetFloat ("MiningSpeed") + 3f);
+		PlayerPrefs.SetFloat("MiningSpeed", PlayerPrefs.GetFloat ("MiningSpeed") + 4f);
+		GameObject.Find ("Player").GetComponent<Inventory> ().GiveMoney (-20);		
 		OnEnable ();
 	}
 
-	public void AddShields(){
-		
-	}
-
 	public static float GetBattery(){
-		checker ();
 		return PlayerPrefs.GetFloat ("MaxEnergy");
 	}
 
 	public static float GetRange(){
-		checker ();
 		return PlayerPrefs.GetFloat ("Range");
 	}
 
 	public static float GetJumpJets(){
-		checker ();
 		return PlayerPrefs.GetFloat ("JumpJets");
 	}
 

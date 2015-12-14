@@ -14,7 +14,7 @@ public class PlayerControl: MonoBehaviour
 	public float maxSpeed;
 	public float breakingSpeed;
 	public float airSpeedAmp;
-	private float jumpForce;
+	public float jumpForce;
 	private float distToGround;
 
 	// Use this for initialization
